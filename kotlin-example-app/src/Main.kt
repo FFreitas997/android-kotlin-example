@@ -3,6 +3,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 fun main() {
+
+    val example = ClassExample("")
+    example.function()
+    example.functionInterface()
+
+
     println("Hello World!")
 
     val list = listOf(1, 2, 3, 4, 5)
@@ -17,8 +23,9 @@ fun main() {
     val mutableSet = mutableSetOf(5, 4, 3, 1, 2)
     println(mutableSet)
 
-    val map = mapOf(1 to "one", 2 to "two", 3 to "three")
-    println(map)
+    val map = mapOf(1 to "one", 2 to "two", 3 to "three").also {
+        println(it)
+    }
 
     val mutableMap = mutableMapOf(1 to "one", 2 to "two", 3 to "three")
     println(mutableMap)
