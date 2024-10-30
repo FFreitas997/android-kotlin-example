@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             LocationExampleTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//merda
+
                 }
             }
         }
