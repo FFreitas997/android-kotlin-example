@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 fun TopBarDisplay() {
 
     TopAppBar(
-        title = { Text(text = "Shopping List App") },
+        title = { Text(text = "Shopping List") },
         colors = topAppBarColors(
             containerColor = Color(0xFFED96A7),
             titleContentColor = Color.White,

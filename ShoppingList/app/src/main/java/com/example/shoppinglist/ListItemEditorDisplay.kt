@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.shoppinglist.data.ShoppingItem
 
 @Composable
 fun ShoppingItemEditor(item: ShoppingItem, onEditComplete: (String, Int) -> Unit) {

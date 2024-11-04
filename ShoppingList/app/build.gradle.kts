@@ -41,6 +41,27 @@ android {
 
 dependencies {
 
+    // Google Maps Compose dependency
+    implementation(libs.maps.compose)
+
+    //Google Maps Services dependency
+    implementation(libs.play.services.maps)
+
+    // Google Maps Location API Library
+    implementation(libs.play.services.location)
+
+    // ViewModel Compose dependency
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // HTTP client library dependency
+    implementation(libs.retrofit)
+
+    // Json to kotlin object mapping dependency
+    implementation(libs.converter.gson)
+
+    // Navigation Compose dependency
+    implementation(libs.androidx.navigation.compose)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

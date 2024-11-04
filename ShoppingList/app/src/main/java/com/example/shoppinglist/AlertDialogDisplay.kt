@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun AlertDialogDisplay(onDismissRequest: () -> Unit, onClickDialogAdd: (name: String, quantity: String) -> Unit) {
+fun AlertDialogDisplay(onSelectLocation: () -> Unit, onDismissRequest: () -> Unit, onClickDialogAdd: (name: String, quantity: String) -> Unit) {
 
     var name by remember { mutableStateOf("") }
     var quantity by remember { mutableStateOf("") }
@@ -53,6 +53,8 @@ fun AlertDialogDisplay(onDismissRequest: () -> Unit, onClickDialogAdd: (name: St
                         .fillMaxWidth()
                         .padding(8.dp)
                 )
+
+                Button(onClick = { onSelectLocation() }) { Text(text = "Add Location") }
 
             }
         },
