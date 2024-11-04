@@ -1,4 +1,4 @@
-package com.example.shoppinglist
+package com.example.shoppinglist.screens
 
 import android.Manifest
 import android.content.Context
@@ -22,13 +22,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
+import com.example.shoppinglist.screens.components.AlertDialogDisplay
+import com.example.shoppinglist.MainActivity
+import com.example.shoppinglist.screens.components.ShoppingItemEditor
+import com.example.shoppinglist.screens.components.ShoppingListItem
 import com.example.shoppinglist.data.ShoppingItem
 import com.example.shoppinglist.utils.LocationUtils
 import com.example.shoppinglist.viewmodels.LocationViewModel
 
 
 @Composable
-fun ShoppingListApp(
+fun ShoppingListScreen(
     modifier: Modifier,
     locationUtils: LocationUtils,
     viewModel: LocationViewModel,
@@ -42,9 +46,7 @@ fun ShoppingListApp(
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
-        onResult = { permissions ->
-            onResultFromRequestPermission(context, permissions)
-        }
+        onResult = { onResultFromRequestPermission(context, it) }
     )
 
     val onEditItemList = { item: ShoppingItem ->
@@ -80,7 +82,7 @@ fun ShoppingListApp(
 
             items(listOfItems) { item ->
                 if (item.isEditing)
-                    ShoppingItemEditor(item){ name, quantity ->
+                    ShoppingItemEditor(item) { name, quantity ->
                         listOfItems = listOfItems.map { it.copy(isEditing = false) }
                         val editedItem = listOfItems.find { it.id == item.id }
                         editedItem?.let {
@@ -100,7 +102,7 @@ fun ShoppingListApp(
 
         val onDismissRequest = { dialogOpen.value = false }
 
-        AlertDialogDisplay(onSelectLocation, onDismissRequest) { name, quantity ->
+        AlertDialogDisplay(viewModel.address.value.firstOrNull(), onSelectLocation, onDismissRequest) { name, quantity ->
             val newItem = ShoppingItem(
                 id = listOfItems.size + 1,
                 name = if (name.isNotBlank()) name else "Unknown",

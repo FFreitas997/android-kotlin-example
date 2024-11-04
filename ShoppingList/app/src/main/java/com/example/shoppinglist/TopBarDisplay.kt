@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.Color
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBarDisplay() {
-
     TopAppBar(
         title = { Text(text = "Shopping List") },
         colors = topAppBarColors(
@@ -18,5 +17,4 @@ fun TopBarDisplay() {
             titleContentColor = Color.White,
         ),
     )
-
 }

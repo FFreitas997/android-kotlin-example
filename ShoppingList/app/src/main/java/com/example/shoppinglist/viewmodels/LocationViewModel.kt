@@ -26,12 +26,11 @@ class LocationViewModel: ViewModel() {
         try {
             viewModelScope.launch {
                 val response = geocodingAPI
-                    .getAddressFromCoordinates(latlng, "AIzaSyBpcdOF-3pIdjd789HDuiYZ-N-aUOfmraA")
+                    .getAddressFromCoordinates(latlng, "AIzaSyBtqEdUp5WMo_yiR-VxXwZLjeCphslQ4Jo")
                 _address.value = response.results
             }
         }catch (e: Exception){
             Log.d("LocationViewModel", "fetchAddress: ${e.message}")
         }
     }
-
 }

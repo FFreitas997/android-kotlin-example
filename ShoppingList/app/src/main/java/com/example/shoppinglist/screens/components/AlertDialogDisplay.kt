@@ -1,4 +1,4 @@
-package com.example.shoppinglist
+package com.example.shoppinglist.screens.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,9 +18,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.shoppinglist.data.GeocodingResult
 
 @Composable
-fun AlertDialogDisplay(onSelectLocation: () -> Unit, onDismissRequest: () -> Unit, onClickDialogAdd: (name: String, quantity: String) -> Unit) {
+fun AlertDialogDisplay(
+    address: GeocodingResult?,
+    onSelectLocation: () -> Unit,
+    onDismissRequest: () -> Unit,
+    onClickDialogAdd: (String, String) -> Unit
+) {
 
     var name by remember { mutableStateOf("") }
     var quantity by remember { mutableStateOf("") }
@@ -55,6 +61,10 @@ fun AlertDialogDisplay(onSelectLocation: () -> Unit, onDismissRequest: () -> Uni
                 )
 
                 Button(onClick = { onSelectLocation() }) { Text(text = "Add Location") }
+
+                if (address != null) {
+                    Text(text = "Address: ${address.formatted_address}", modifier = Modifier.padding(top = 8.dp))
+                }
 
             }
         },

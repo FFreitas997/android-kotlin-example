@@ -1,4 +1,4 @@
-package com.example.shoppinglist
+package com.example.shoppinglist.screens.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

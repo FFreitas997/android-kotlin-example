@@ -10,11 +10,9 @@ import androidx.compose.ui.graphics.Color
 
 @Composable
 fun FloatingActionButtonDisplay(isDialogOpen: MutableState<Boolean>) {
-
     FloatingActionButton(
         onClick = { isDialogOpen.value = true },
         containerColor = Color(0xFFED96A7),
         contentColor = Color.White
     ) { Icon(Icons.Default.Add, contentDescription = "Add") }
-
 }

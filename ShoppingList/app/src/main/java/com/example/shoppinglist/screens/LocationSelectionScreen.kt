@@ -30,6 +30,11 @@ fun LocationSelectionScreen(
     var cameraPositionState =
         rememberCameraPositionState{ position = CameraPosition.fromLatLngZoom(userLocation, 10f) }
 
+    val onClickButton = {
+        val newLocation = Location(userLocation.latitude, userLocation.longitude)
+        onLocationSelected(newLocation)
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         GoogleMap(
@@ -40,13 +45,6 @@ fun LocationSelectionScreen(
             Marker(state = MarkerState(position = userLocation))
         }
 
-        Button(
-            onClick = {
-                val newLocation = Location(userLocation.latitude, userLocation.longitude)
-                onLocationSelected(newLocation)
-            }
-        ) {
-            Text("Set Location")
-        }
+        Button(onClick = { onClickButton() }) { Text("Add Location") }
     }
 }

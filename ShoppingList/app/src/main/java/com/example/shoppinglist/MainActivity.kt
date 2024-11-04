@@ -15,13 +15,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 
 import androidx.navigation.compose.rememberNavController
 import com.example.shoppinglist.screens.LocationSelectionScreen
+import com.example.shoppinglist.screens.ShoppingListScreen
 import com.example.shoppinglist.ui.theme.ShoppingListTheme
 import com.example.shoppinglist.utils.LocationUtils
 import com.example.shoppinglist.viewmodels.LocationViewModel
@@ -38,17 +38,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     topBar = { TopBarDisplay() },
                     floatingActionButton = { FloatingActionButtonDisplay(isDialogOpen) }
-                ) {
-                    Navigation(Modifier.padding(it), isDialogOpen)
-                }
+                ) { ShoppingListApp(Modifier.padding(it), isDialogOpen) }
             }
-
         }
     }
 }
 
 @Composable
-fun Navigation(modifier: Modifier, dialogOpen: MutableState<Boolean>){
+fun ShoppingListApp(modifier: Modifier, dialogOpen: MutableState<Boolean>){
     val navController = rememberNavController()
     val viewModel: LocationViewModel = viewModel()
     val context: Context = LocalContext.current
@@ -56,9 +53,8 @@ fun Navigation(modifier: Modifier, dialogOpen: MutableState<Boolean>){
 
     NavHost(navController = navController, startDestination = "shoppinglistscreen") {
         composable("shoppinglistscreen") {
-            ShoppingListApp(
+            ShoppingListScreen(
                 modifier = modifier,
-
                 locationUtils = locationUtils,
                 navController = navController,
                 viewModel = viewModel,
@@ -77,7 +73,6 @@ fun Navigation(modifier: Modifier, dialogOpen: MutableState<Boolean>){
                     }
                 )
             }
-
         }
     }
 }

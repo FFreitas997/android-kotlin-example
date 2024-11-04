@@ -1,4 +1,4 @@
-package com.example.shoppinglist
+package com.example.shoppinglist.screens.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -43,7 +43,7 @@ fun ShoppingListItem(
 
             Row(modifier = Modifier.fillMaxWidth()) {
                 Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Location")
-                Text(text = item.address, modifier = Modifier.padding(8.dp))
+                Text(text = item.address, modifier = Modifier.padding(start = 8.dp))
             }
         }
 
