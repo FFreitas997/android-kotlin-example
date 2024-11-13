@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Age In Minutes</string>
     <string name="title_text">CALCULATE YOUR</string>
     <string name="subtitle_text">AGE</string>
     <string name="second_subtitle_text">IN MINUTES</string>
