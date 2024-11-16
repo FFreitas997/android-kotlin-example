@@ -1,4 +1,9 @@
-package com.example.flagquiz.data
+package com.example.flagquiz.utils
+
+import com.example.flagquiz.data.Country
+import com.example.flagquiz.data.Option
+import com.example.flagquiz.data.Question
+import com.example.flagquiz.data.countries
 
 object Questions {
 
@@ -20,7 +25,7 @@ object Questions {
                 value = "What country does this flag belong to?",
                 country = country,
                 hint = "This country is located in ${country.continent}",
-                options = options.map { country ->  Option(country = country, selected = false) }
+                options = options.map { country -> Option(country = country, selected = false) }
             )
             numQuestion++
             questionsSet.add(question)

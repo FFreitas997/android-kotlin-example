@@ -4,13 +4,12 @@ import android.os.Bundle
 import android.text.Editable
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.flagquiz.listener.ClickListener
-import com.example.flagquiz.listener.TextChangeListener
+import com.example.flagquiz.listeners.ClickListener
+import com.example.flagquiz.listeners.TextChangeListener
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,11 +38,9 @@ class MainActivity : AppCompatActivity() {
 
     fun onTextChanged(editable: Editable?) {
         startButton.isEnabled = editable != null && editable.isNotEmpty()
-        if (editable == null || editable.isEmpty()){
+        if (editable == null || editable.isEmpty()) {
             usernameEditText.error = "This field is required"
-            Toast.makeText(this, "Please enter an username", Toast.LENGTH_SHORT).show()
-        }
-        else {
+        } else {
             usernameEditText.error = null
             username = editable.toString()
         }
