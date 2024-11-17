@@ -71,8 +71,8 @@
                 android:inputType="textCapWords"
                 android:singleLine="true"
                 android:textAlignment="center"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textColor="@color/welcome_color" />
+                android:textAppearance="@style/Theme.Material3.DayNight"
+                android:textSize="15sp"/>
 
             <Button
                 android:id="@+id/startButton"

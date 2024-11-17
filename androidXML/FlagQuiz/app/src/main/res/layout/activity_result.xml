@@ -12,6 +12,13 @@
     android:padding="16dp"
     tools:context=".ResultActivity">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/trophy"
+        android:src="@drawable/trophy"
+        android:layout_margin="16dp" />
+
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
@@ -21,9 +28,7 @@
         android:text="@string/quiz_result"
         android:textColor="@color/white"
         android:textSize="30sp"
-        android:textStyle="bold"
-        android:drawablePadding="-60dp"
-        app:drawableEndCompat="@drawable/trophy" />
+        android:textStyle="bold"/>
 
 
     <TextView

@@ -2,7 +2,9 @@ package com.example.flagquiz
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import android.widget.Button
+import android.widget.Chronometer
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -16,20 +18,22 @@ import com.example.flagquiz.data.Question
 import com.example.flagquiz.data.Statistic
 import com.example.flagquiz.listeners.OnClickNextQuestionListener
 import com.example.flagquiz.listeners.OnClickQuizOption
+import com.example.flagquiz.utils.Constants
 import com.example.flagquiz.utils.Questions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class QuizQuestionActivity : AppCompatActivity() {
 
-    val quizSize = 10
-    var startTime = System.currentTimeMillis()
+    val quizSize = Constants.QUIZ_SIZE
     var score = 0
     val quizQuestions = Questions.getQuestions(quizSize)
     lateinit var currentQuestion: Question
 
+    lateinit var chronometer: Chronometer
     lateinit var questionTextView: TextView
     lateinit var questionHintTextView: TextView
     lateinit var questionImageView: ImageView
@@ -53,7 +57,10 @@ class QuizQuestionActivity : AppCompatActivity() {
             insets
         }
 
-        startTime = System.currentTimeMillis()
+        chronometer = findViewById<Chronometer>(R.id.chronometer)
+        chronometer.base = SystemClock.elapsedRealtime()
+        chronometer.format = "Quiz Time: %s"
+        chronometer.start()
 
         questionTextView = findViewById<TextView>(R.id.question_number_text_view)
         questionImageView = findViewById<ImageView>(R.id.flag_image_view)
@@ -68,11 +75,13 @@ class QuizQuestionActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.option_four)
         )
 
+        options.forEach { it.setOnClickListener(OnClickQuizOption(this)) }
+
         buttonSubmit = findViewById<Button>(R.id.submit_button)
         usernameTextView = findViewById<TextView>(R.id.username)
 
 
-        val username = intent.extras?.getString("username") ?: ""
+        val username = intent.extras?.getString(Constants.USERNAME_KEY) ?: ""
         usernameTextView.text = getString(R.string.username, username)
 
         // Initialize the progress bar and text view
@@ -80,13 +89,11 @@ class QuizQuestionActivity : AppCompatActivity() {
         progressBar.progress = 1
         progressTextView.text = getString(R.string.progress_text, progressBar.progress, quizSize)
 
-        buttonSubmit
-            .setOnClickListener(
-                OnClickNextQuestionListener(this) { nextQuestion() }
-            )
+        val onSubmit = OnClickNextQuestionListener(this) { nextQuestion() }
 
-        currentQuestion = quizQuestions
-            .elementAtOrNull((progressBar.progress) - 1)
+        buttonSubmit.setOnClickListener(onSubmit)
+
+        currentQuestion = quizQuestions.elementAtOrNull((progressBar.progress) - 1)
             ?: throw IllegalStateException("No questions found")
 
         setupQuestion()
@@ -102,13 +109,9 @@ class QuizQuestionActivity : AppCompatActivity() {
                 return@launch
             }
             progressBar.progress += 1
-            currentQuestion = quizQuestions
-                .elementAtOrNull((progressBar.progress) - 1)
+            progressTextView.text = getString(R.string.progress_text, progressBar.progress, quizSize)
+            currentQuestion = quizQuestions.elementAtOrNull((progressBar.progress) - 1)
                 ?: throw IllegalStateException("No questions found")
-            progressTextView.text =
-                getString(R.string.progress_text, progressBar.progress, quizSize)
-            buttonSubmit.isEnabled = true
-            options.forEach { it.isEnabled = true }
             setupQuestion()
         }
     }
@@ -124,9 +127,9 @@ class QuizQuestionActivity : AppCompatActivity() {
         options
             .forEachIndexed { index, textView ->
                 textView.setBackgroundResource(R.drawable.default_option_border_bg)
-                textView.isEnabled = true
                 textView.text = question.options[index].country.name
-                textView.setOnClickListener(OnClickQuizOption(this))
+                textView.isEnabled = true
+                textView.setTypeface(null, android.graphics.Typeface.NORMAL)
             }
     }
 
@@ -134,16 +137,17 @@ class QuizQuestionActivity : AppCompatActivity() {
         Toast
             .makeText(this, "Congratulations! You have completed the quiz!", Toast.LENGTH_LONG)
             .show()
-        val endTime = System.currentTimeMillis()
+        chronometer.stop()
         val statistic = Statistic(
             username = usernameTextView.text.toString(),
             score = score,
-            time = SimpleDateFormat("HH:mm:ss", Locale.ENGLISH)
-                .format(endTime - startTime)
-                .toString()
+            time = SimpleDateFormat("mm:ss", Locale.getDefault())
+                .format(SystemClock.elapsedRealtime() - chronometer.base)
+                .toString(),
+            numQuestions = quizSize
         )
         val intent = Intent(this, ResultActivity::class.java)
-        intent.putExtra("statistic", statistic)
+        intent.putExtra(Constants.STATISTIC_KEY, statistic)
         startActivity(intent)
         finish()
     }

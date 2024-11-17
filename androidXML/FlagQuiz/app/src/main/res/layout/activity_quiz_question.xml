@@ -13,10 +13,19 @@
         android:id="@+id/quiz_question_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_margin="8dp"
         android:background="@color/white"
         android:gravity="center"
         android:orientation="vertical">
+
+        <Chronometer
+            android:id="@+id/chronometer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_margin="8dp"
+            android:textColor="@color/black"
+            />
 
         <TextView
             android:id="@+id/question_number_text_view"

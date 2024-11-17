@@ -6,18 +6,21 @@ import android.os.Parcelable
 data class Statistic(
     val username: String,
     val score: Int,
-    val time: String
+    val time: String,
+    val numQuestions: Int,
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readInt(),
-        parcel.readString()!!
+        parcel.readString()!!,
+        parcel.readInt(),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(username)
         parcel.writeInt(score)
         parcel.writeString(time)
+        parcel.writeInt(numQuestions)
     }
 
     override fun describeContents(): Int {

@@ -18,7 +18,7 @@ class TextChangeListener(val activity: MainActivity, val onTextChange: (value: E
         activity
             .lifecycleScope
             .launch {
-                delay(300)
+                delay(200)
                 onTextChange(editable)
             }
     }

@@ -9,6 +9,7 @@ import androidx.core.content.IntentCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.flagquiz.data.Statistic
+import com.example.flagquiz.utils.Constants
 
 class ResultActivity : AppCompatActivity() {
 
@@ -34,7 +35,7 @@ class ResultActivity : AppCompatActivity() {
         button = findViewById(R.id.button)
 
         val statistics = IntentCompat
-            .getParcelableExtra(intent, "statistic", Statistic::class.java)
+            .getParcelableExtra(intent, Constants.STATISTIC_KEY, Statistic::class.java)
 
         if (statistics == null) {
             finish()
@@ -42,7 +43,7 @@ class ResultActivity : AppCompatActivity() {
         }
 
         usernameView.text = statistics.username
-        scoreView.text = getString(R.string.score, statistics.score)
+        scoreView.text = getString(R.string.score, statistics.score, statistics.numQuestions)
         timeView.text = getString(R.string.time, statistics.time)
 
         button

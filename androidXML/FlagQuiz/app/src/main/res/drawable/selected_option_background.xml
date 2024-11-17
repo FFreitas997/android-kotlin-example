@@ -5,8 +5,8 @@
     android:shape="rectangle">
 
     <stroke
-        android:width="3dp"
-        android:color="@color/black" />
+        android:width="1dp"
+        android:color="@color/design_default_color_primary" />
 
     <solid android:color="@android:color/white" />
 

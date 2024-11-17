@@ -1,6 +1,7 @@
 package com.example.flagquiz.listeners
 
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import com.example.flagquiz.QuizQuestionActivity
 import com.example.flagquiz.R
@@ -12,21 +13,25 @@ class OnClickNextQuestionListener(
 ) : View.OnClickListener {
 
     override fun onClick(view: View?) {
+
         val selectedOption = context
             .currentQuestion
             .options
             .firstOrNull { it.selected }
+
         if (selectedOption == null) {
             Toast
                 .makeText(context, "Please select an option", Toast.LENGTH_LONG)
                 .show()
             return
         }
+
         val hasCorrectAnswer = Questions
             .isCorrect(context.currentQuestion, selectedOption.country)
+
         if (!hasCorrectAnswer)
             Toast
-                .makeText(context, "Sorry Wrong Answer :(", Toast.LENGTH_LONG)
+                .makeText(context, "Sorry wrong answer :(", Toast.LENGTH_LONG)
                 .show()
         else {
             Toast
@@ -34,16 +39,17 @@ class OnClickNextQuestionListener(
                 .show()
             context.score += 1
         }
+
         context
             .options
-            .forEach {
-                it.setBackgroundResource(
-                    if (it.text == context.currentQuestion.country.name)
-                        R.drawable.correct_option_background
-                    else
-                        R.drawable.incorrect_option_background
-                )
-            }
+            .forEach { it.setBackgroundResource(getBackgroundResource(it)) }
+
         nextQuestion()
     }
+
+    private fun getBackgroundResource(option: TextView) =
+        if (option.text == context.currentQuestion.country.name)
+            R.drawable.correct_option_background
+        else
+            R.drawable.incorrect_option_background
 }
