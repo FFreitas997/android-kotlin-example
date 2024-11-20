@@ -29,7 +29,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
             Color.BLACK
 
     private val mPaths = mutableListOf<CustomPath>()
-
+    private val mUndoPaths = mutableListOf<CustomPath>()
 
     init {
         setUpDrawing()
@@ -71,6 +71,11 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
     }
 
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         val touchX = event?.x
         val touchY = event?.y
@@ -90,6 +95,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
             }
 
             MotionEvent.ACTION_UP -> {
+                this.performClick()
                 mPaths.add(mDrawPath!!)
                 mDrawPath = CustomPath(color, mBrushSize)
             }
@@ -107,14 +113,22 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         mDrawPaint!!.strokeWidth = mBrushSize
     }
 
-    fun setColor(newColor: Int) {
-        color = newColor
+    fun setColor(newColor: String) {
+        color = Color.parseColor(newColor)
+        mDrawPaint!!.color = color
     }
 
     private fun isDarkMode(): Boolean {
         val currentNightMode =
             context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         return currentNightMode == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    fun undo() {
+        if (mPaths.isNotEmpty()) {
+            mUndoPaths.add(mPaths.removeAt(mPaths.size - 1))
+            invalidate()
+        }
     }
 
     internal inner class CustomPath(var color: Int, var brushThickness: Float) : Path() {}

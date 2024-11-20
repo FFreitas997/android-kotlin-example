@@ -6,4 +6,9 @@
     <string name="brush_selector">brush_selector</string>
     <string name="color">color</string>
     <string name="image">image</string>
+    <string name="color_selector">color selector</string>
+    <string name="background_image">background_image</string>
+    <string name="background_selector">background selector</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="please_select_brush_size">Please select brush size</string>
 </resources>
