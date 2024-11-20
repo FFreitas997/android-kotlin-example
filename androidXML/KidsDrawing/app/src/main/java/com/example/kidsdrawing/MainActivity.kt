@@ -104,8 +104,10 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
             Constants.REQUEST_CODE_WRITE_EXTERNAL_STORAGE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED)
-                    saveCurrentDrawing()
+                if (grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED){
+                    loadingDialog.show()
+                    lifecycleScope.launch { saveCurrentDrawing() }
+                }
                 else
                     showAlertDialog("Permission denied", "You can't save the drawing without this permission.")
             }
@@ -245,7 +247,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestSaveImagePermission() {
         if (VERSION.SDK_INT > VERSION_CODES.P) {
-            saveCurrentDrawing()
+            loadingDialog.show()
+            lifecycleScope.launch { saveCurrentDrawing() }
             return
         }
         // For Android 10 and below versions of Android OS is needed to request permission to write external storage
@@ -263,44 +266,43 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveCurrentDrawing() {
-        loadingDialog.show()
-
-        lifecycleScope
-            .launch {
-                val bitmap = getBitmapFromView(findViewById<FrameLayout>(R.id.fl_drawing_view))
-                withContext(Dispatchers.IO) {
-                    try {
-
-                        val values = ContentValues()
-                            .apply {
-                                put(MediaStore.Images.Media.DISPLAY_NAME, "KidsDrawingApp_${(System.currentTimeMillis() / 1000)}.png")
-                                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-                            }
-
-                        var imageURI = contentResolver
-                            .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-
-                        contentResolver
-                            .openOutputStream(imageURI!!)
-                            .use { out -> out?.let { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) } }
-
-                        delay(1500)
-
-                        withContext(Dispatchers.Main) {
-                            loadingDialog.dismiss()
-                            Toast
-                                .makeText(this@MainActivity, "File saved successfully: $imageURI", Toast.LENGTH_LONG)
-                                .show()
-                            shareDrawing(imageURI)
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        Log.e("MainActivity", "Error saving image: ${e.message}")
+    private suspend fun saveCurrentDrawing() {
+        withContext(Dispatchers.IO) {
+            val bitmap = getBitmapFromView(findViewById<FrameLayout>(R.id.fl_drawing_view))
+            try {
+                val values = ContentValues()
+                    .apply {
+                        put(MediaStore.Images.Media.DISPLAY_NAME, "KidsDrawingApp_${(System.currentTimeMillis() / 1000)}.png")
+                        put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+                        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
                     }
+                var imageURI = contentResolver
+                    .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+
+                contentResolver
+                    .openOutputStream(imageURI!!)
+                    .use { out -> out?.let { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) } }
+
+                delay(1500)
+
+                withContext(Dispatchers.Main) {
+                    loadingDialog.dismiss()
+                    AlertDialog
+                        .Builder(this@MainActivity)
+                        .setTitle("Share your drawing")
+                        .setMessage("Do you want to share your drawing?")
+                        .setCancelable(false)
+                        .setIcon(android.R.drawable.ic_dialog_info)
+                        .setPositiveButton("OK") { dialog, _ -> dialog.dismiss(); shareDrawing(imageURI) }
+                        .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+                        .create()
+                        .show()
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("MainActivity", "Error saving image: ${e.message}")
             }
+        }
     }
 
     private fun shareDrawing(result: Uri) {
