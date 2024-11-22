@@ -3,4 +3,10 @@
     <string name="app_logo">logo</string>
     <string name="button_drawable">button_drawable</string>
     <string name="start_button_value">Start</string>
+    <string name="exercise_title">GET READY TO SWEAT!</string>
+    <string name="start_timer">10</string>
+    <string name="exercise_name">Exercise Name</string>
+    <string name="exercise_image">exercise image</string>
+    <string name="upcoming_exercise">Upcoming Exercise:</string>
+    <string name="first_exercise">Squat</string>
 </resources>
