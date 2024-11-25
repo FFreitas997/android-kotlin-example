@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.a7minutesworkout.databinding.ActivityMainBinding
+import com.example.a7minutesworkout.listeners.StartButtonClick
 
 class MainActivity : AppCompatActivity() {
 

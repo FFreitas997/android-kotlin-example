@@ -1,7 +1,9 @@
-package com.example.a7minutesworkout
+package com.example.a7minutesworkout.listeners
 
 import android.content.Intent
 import android.view.View
+import com.example.a7minutesworkout.ExerciseActivity
+import com.example.a7minutesworkout.MainActivity
 
 class StartButtonClick(val context: MainActivity) : View.OnClickListener {
 
