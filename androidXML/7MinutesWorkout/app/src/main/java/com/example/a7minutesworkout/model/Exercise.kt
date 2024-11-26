@@ -5,6 +5,4 @@ interface Exercise {
     val name: Int
     val image: Int
     var status: ExerciseStatus
-
-    //fun setExerciseStatus(status: ExerciseStatus){ this.status = status }
 }

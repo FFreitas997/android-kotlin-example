@@ -27,4 +27,8 @@
     <string name="finish">Finished</string>
     <string name="image">correct</string>
     <string name="finishButton">FINISH</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="this_will_stop_your_workout_you_have_come_this_far_are_you_sure_you_want_to_quit">This will stop your workout. You have come this far, are you sure you want to quit?</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
 </resources>

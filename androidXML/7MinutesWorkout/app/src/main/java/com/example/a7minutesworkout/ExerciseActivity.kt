@@ -1,10 +1,12 @@
 package com.example.a7minutesworkout
 
+import android.app.Dialog
 import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.a7minutesworkout.adapter.ExerciseStatusAdapter
 import com.example.a7minutesworkout.constants.Constants
 import com.example.a7minutesworkout.databinding.ActivityExerciseBinding
+import com.example.a7minutesworkout.databinding.DialogCustomBackConfirmationBinding
 import com.example.a7minutesworkout.model.Exercise
 import com.example.a7minutesworkout.model.ExerciseModel
 import com.example.a7minutesworkout.model.ExerciseStatus
@@ -60,10 +63,17 @@ class ExerciseActivity : AppCompatActivity() {
         if (supportActionBar != null)
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        onBackPressedDispatcher
+            .addCallback(this, object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val dialog = createCustomDialog()
+                    dialog.show()
+                }
+            })
+
         binding
             ?.toolbar
             ?.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
-
 
         model = ExerciseModel.create(Constants.NUMBER_OF_EXERCISES)
         textSpeech = TextSpeech.create(this)
@@ -167,6 +177,24 @@ class ExerciseActivity : AppCompatActivity() {
     fun onFinishWorkout() {
         Intent(this, FinishActivity::class.java)
             .also { startActivity(it); finish() }
+    }
+
+    private fun createCustomDialog(): Dialog {
+        val warningCustomDialog = Dialog(this)
+        val dialogBinding = DialogCustomBackConfirmationBinding
+            .inflate(layoutInflater)
+            .also { warningCustomDialog.setContentView(it.root) }
+        warningCustomDialog.setCanceledOnTouchOutside(false)
+
+        dialogBinding
+            .tvYes
+            .setOnClickListener { warningCustomDialog.dismiss(); finish() }
+
+        dialogBinding
+            .tvNo
+            .setOnClickListener { warningCustomDialog.dismiss() }
+
+        return warningCustomDialog
     }
 
     override fun onDestroy() {
