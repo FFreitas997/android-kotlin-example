@@ -1,26 +1,26 @@
 package com.example.a7minutesworkout.model
 
-import com.example.a7minutesworkout.constants.Constants
+class ExerciseModel(val list: List<Exercise>) {
 
-class ExerciseModel(list: List<Exercise>) {
+    fun getExerciseAt(position: Int): Exercise{
+        if (position < 0 || position >= list.size)
+            throw IndexOutOfBoundsException("Invalid position $position")
+        return list[position]
+    }
 
-    private var listOfExercises: List<Exercise> = list
+    fun getExerciseCount(): Int = list.size
 
-    fun getExerciseAt(position: Int): Exercise = listOfExercises[position]
+    fun getExercises(): List<Exercise> = list
 
-    fun getExerciseCount(): Int = listOfExercises.size
-
-    //fun getExerciseIndex(exercise: Exercise): Int = listOfExercises.indexOf(exercise)
-
-    //fun getExerciseIndexById(id: Int): Int = listOfExercises.indexOfFirst { it.id == id }
-
-    //fun getExercises(): List<Exercise> = listOfExercises
+    fun setStatusAt(position: Int, status: ExerciseStatus) {
+        if (position < 0 || position >= list.size)
+            throw IndexOutOfBoundsException("Invalid position $position")
+        list[position].status = status
+    }
 
     companion object Factory {
-        fun create(): ExerciseModel {
-            val list = listOfExercises
-                .take(Constants.NUMBER_OF_EXERCISES)
-                .shuffled()
+        fun create(numberOfExercises: Int): ExerciseModel {
+            val list = listOfExercises.take(numberOfExercises)
             return ExerciseModel(list)
         }
     }

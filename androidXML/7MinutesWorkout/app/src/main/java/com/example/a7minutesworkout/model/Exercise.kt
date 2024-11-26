@@ -4,6 +4,7 @@ interface Exercise {
     val id: Int
     val name: Int
     val image: Int
-    val isCompleted: Boolean
-    val isSelected: Boolean
+    var status: ExerciseStatus
+
+    //fun setExerciseStatus(status: ExerciseStatus){ this.status = status }
 }

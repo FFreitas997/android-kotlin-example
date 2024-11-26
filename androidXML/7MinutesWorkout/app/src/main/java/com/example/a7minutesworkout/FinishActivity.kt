@@ -1,25 +1,25 @@
 package com.example.a7minutesworkout
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.a7minutesworkout.databinding.ActivityMainBinding
+import com.example.a7minutesworkout.databinding.ActivityFinishBinding
 
-class MainActivity : AppCompatActivity() {
+class FinishActivity : AppCompatActivity() {
 
-    private var binding: ActivityMainBinding? = null
+    private var binding: ActivityFinishBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
 
-        binding = ActivityMainBinding
+        binding = ActivityFinishBinding
             .inflate(layoutInflater)
             .also { setContentView(it.root) }
+
+        //setContentView(R.layout.activity_finish)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -27,12 +27,18 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        setSupportActionBar(binding?.toolbarFinishActivity)
+
+        if (supportActionBar != null)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         binding
-            ?.startButtonFrameLayout
-            ?.setOnClickListener {
-                val intent = Intent(this, ExerciseActivity::class.java)
-                startActivity(intent)
-            }
+            ?.toolbarFinishActivity
+            ?.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+
+        binding
+            ?.btnFinish
+            ?.setOnClickListener { finish() }
     }
 
     override fun onDestroy() {

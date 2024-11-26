@@ -9,8 +9,8 @@
     <string name="exercise_image">exercise image</string>
     <string name="upcoming_exercise">Upcoming Exercise:</string>
     <string name="first_exercise">Squat</string>
-    <string name="congratulations">Congratulation! You have finished the workout plan</string>
-    <string name="congratulations_title">Congratulations</string>
+    <string name="congratulations">You have finished the workout plan</string>
+    <string name="congratulations_title">Congratulations!</string>
     <string name="ok">OK</string>
     <string name="side_plank">Side Plank</string>
     <string name="push_and_rotation">Push And Rotation</string>
@@ -24,4 +24,7 @@
     <string name="jumping_jacks">Jumping Jacks</string>
     <string name="wall_sit">Wall Sit</string>
     <string name="push_up">Push Up</string>
+    <string name="finish">Finished</string>
+    <string name="image">correct</string>
+    <string name="finishButton">FINISH</string>
 </resources>
