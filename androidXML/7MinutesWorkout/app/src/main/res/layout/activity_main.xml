@@ -47,8 +47,8 @@
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_margin="16dp"
-        android:gravity="center"
         android:background="@drawable/item_circular_color_accent_background"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/historyButtonFrameLayout"
         app:layout_constraintStart_toStartOf="parent"
@@ -110,8 +110,8 @@
         android:textColor="@color/colorAccent"
         android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/historyButtonFrameLayout"
+        app:layout_constraintEnd_toEndOf="@id/historyButtonFrameLayout"
         app:layout_constraintStart_toStartOf="@id/historyButtonFrameLayout"
-        app:layout_constraintEnd_toEndOf="@id/historyButtonFrameLayout" />
+        app:layout_constraintTop_toBottomOf="@id/historyButtonFrameLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
