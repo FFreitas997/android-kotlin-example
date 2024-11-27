@@ -1,23 +1,22 @@
 package com.example.a7minutesworkout
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.a7minutesworkout.databinding.ActivityMainBinding
+import com.example.a7minutesworkout.databinding.ActivityHistoryBinding
 
-class MainActivity : AppCompatActivity() {
+class HistoryActivity : AppCompatActivity() {
 
-    private var binding: ActivityMainBinding? = null
+    private var binding: ActivityHistoryBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
 
-        binding = ActivityMainBinding
+        binding = ActivityHistoryBinding
             .inflate(layoutInflater)
             .also { setContentView(it.root) }
 
@@ -27,26 +26,17 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        binding
-            ?.startButtonFrameLayout
-            ?.setOnClickListener {
-                val intent = Intent(this, ExerciseActivity::class.java)
-                startActivity(intent)
-            }
+        setSupportActionBar(binding?.toolbar)
+
+        if (supportActionBar != null) {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.title = getString(R.string.toolbar_title_history_screen)
+        }
 
         binding
-            ?.bmiButtonFrameLayout
-            ?.setOnClickListener {
-                val intent = Intent(this, BMIActivity::class.java)
-                startActivity(intent)
-            }
+            ?.toolbar
+            ?.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
-        binding
-            ?.historyButtonFrameLayout
-            ?.setOnClickListener {
-                val intent = Intent(this, HistoryActivity::class.java)
-                startActivity(intent)
-            }
     }
 
     override fun onDestroy() {

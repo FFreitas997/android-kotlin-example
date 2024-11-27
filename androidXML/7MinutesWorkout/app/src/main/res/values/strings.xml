@@ -57,4 +57,6 @@
     <string name="inch">Inch</string>
     <string name="please_enter_your_feet_value">Please enter your feet value</string>
     <string name="please_enter_your_inch_value">Please enter your inch value</string>
+    <string name="toolbar_title_history_screen">History</string>
+    <string name="history">History</string>
 </resources>

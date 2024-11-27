@@ -47,9 +47,10 @@
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_margin="16dp"
+        android:gravity="center"
         android:background="@drawable/item_circular_color_accent_background"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/historyButtonFrameLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/startButtonFrameLayout">
 
@@ -75,9 +76,42 @@
         android:textColor="@color/colorAccent"
         android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/bmiButtonFrameLayout"
+        app:layout_constraintStart_toStartOf="@id/bmiButtonFrameLayout"
         app:layout_constraintTop_toBottomOf="@id/bmiButtonFrameLayout" />
 
+
+    <FrameLayout
+        android:id="@+id/historyButtonFrameLayout"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_margin="16dp"
+        android:background="@drawable/item_circular_color_accent_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/bmiButtonFrameLayout"
+        app:layout_constraintTop_toBottomOf="@id/startButtonFrameLayout">
+
+        <ImageView
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/image"
+            android:src="@drawable/ic_calendar" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/history_button_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="@string/history"
+        android:textColor="@color/colorAccent"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/historyButtonFrameLayout"
+        app:layout_constraintStart_toStartOf="@id/historyButtonFrameLayout"
+        app:layout_constraintEnd_toEndOf="@id/historyButtonFrameLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
