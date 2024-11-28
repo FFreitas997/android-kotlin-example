@@ -30,22 +30,22 @@ class MainActivity : AppCompatActivity() {
         binding
             ?.startButtonFrameLayout
             ?.setOnClickListener {
-                val intent = Intent(this, ExerciseActivity::class.java)
-                startActivity(intent)
+                Intent(this, ExerciseActivity::class.java)
+                    .also { intent -> startActivity(intent) }
             }
 
         binding
             ?.bmiButtonFrameLayout
             ?.setOnClickListener {
-                val intent = Intent(this, BMIActivity::class.java)
-                startActivity(intent)
+                Intent(this, BMIActivity::class.java)
+                    .also { intent -> startActivity(intent) }
             }
 
         binding
             ?.historyButtonFrameLayout
             ?.setOnClickListener {
-                val intent = Intent(this, HistoryActivity::class.java)
-                startActivity(intent)
+                Intent(this, HistoryActivity::class.java)
+                    .also { intent -> startActivity(intent) }
             }
     }
 

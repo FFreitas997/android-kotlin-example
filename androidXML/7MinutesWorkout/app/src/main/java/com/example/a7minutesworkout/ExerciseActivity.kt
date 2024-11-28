@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.a7minutesworkout.adapter.ExerciseStatusAdapter
 import com.example.a7minutesworkout.constants.Constants
 import com.example.a7minutesworkout.databinding.ActivityExerciseBinding
-import com.example.a7minutesworkout.model.Exercise
-import com.example.a7minutesworkout.model.ExerciseModel
-import com.example.a7minutesworkout.model.ExerciseStatus
+import com.example.a7minutesworkout.model.exercise.Exercise
+import com.example.a7minutesworkout.model.exercise.ExerciseModel
+import com.example.a7minutesworkout.model.exercise.ExerciseStatus
 import com.example.a7minutesworkout.util.BackPressedCallback
 import com.example.a7minutesworkout.util.CountDownTimer
 import com.example.a7minutesworkout.util.TextSpeech

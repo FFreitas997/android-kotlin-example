@@ -1,4 +1,4 @@
-package com.example.a7minutesworkout.model
+package com.example.a7minutesworkout.model.exercise
 
 import com.example.a7minutesworkout.R
 

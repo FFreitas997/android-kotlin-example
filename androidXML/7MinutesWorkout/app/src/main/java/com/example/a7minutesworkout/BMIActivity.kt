@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.a7minutesworkout.databinding.ActivityBmiactivityBinding
-import com.example.a7minutesworkout.model.Metric
+import com.example.a7minutesworkout.model.exercise.Metric
 import java.util.Locale
 
 class BMIActivity : AppCompatActivity() {

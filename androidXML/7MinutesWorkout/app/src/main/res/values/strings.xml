@@ -59,4 +59,5 @@
     <string name="please_enter_your_inch_value">Please enter your inch value</string>
     <string name="toolbar_title_history_screen">History</string>
     <string name="history">History</string>
+    <string name="no_data">No Data Available</string>
 </resources>

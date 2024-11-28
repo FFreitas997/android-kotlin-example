@@ -11,9 +11,7 @@ class BackPressedCallback(val context: ExerciseActivity) : OnBackPressedCallback
     private val tag = BackPressedCallback::class.java.simpleName
     private val dialog: Dialog
 
-    init {
-        dialog = createCustomDialog()
-    }
+    init { dialog = createCustomDialog() }
 
     override fun handleOnBackPressed() {
         Log.w(tag, "The back button was pressed and handled.")

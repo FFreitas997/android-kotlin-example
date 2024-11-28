@@ -1,8 +1,8 @@
-package com.example.a7minutesworkout.model
+package com.example.a7minutesworkout.model.exercise
 
-class ExerciseModel(val list: List<Exercise>) {
+class ExerciseModel(private val list: List<Exercise>) {
 
-    fun getExerciseAt(position: Int): Exercise{
+    fun getExerciseAt(position: Int): Exercise {
         if (position < 0 || position >= list.size)
             throw IndexOutOfBoundsException("Invalid position $position")
         return list[position]

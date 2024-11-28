@@ -8,8 +8,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.a7minutesworkout.R
 import com.example.a7minutesworkout.databinding.ItemExerciseStatusBinding
-import com.example.a7minutesworkout.model.Exercise
-import com.example.a7minutesworkout.model.ExerciseStatus
+import com.example.a7minutesworkout.model.exercise.Exercise
+import com.example.a7minutesworkout.model.exercise.ExerciseStatus
 import java.util.Locale
 
 class ExerciseStatusAdapter(private val exercises: List<Exercise>): RecyclerView.Adapter<ExerciseStatusAdapter.ViewHolder>() {
