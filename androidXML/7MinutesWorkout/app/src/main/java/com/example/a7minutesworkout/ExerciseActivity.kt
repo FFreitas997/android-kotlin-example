@@ -1,12 +1,10 @@
 package com.example.a7minutesworkout
 
-import android.app.Dialog
 import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -15,10 +13,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.a7minutesworkout.adapter.ExerciseStatusAdapter
 import com.example.a7minutesworkout.constants.Constants
 import com.example.a7minutesworkout.databinding.ActivityExerciseBinding
-import com.example.a7minutesworkout.databinding.DialogCustomBackConfirmationBinding
 import com.example.a7minutesworkout.model.Exercise
 import com.example.a7minutesworkout.model.ExerciseModel
 import com.example.a7minutesworkout.model.ExerciseStatus
+import com.example.a7minutesworkout.util.BackPressedCallback
 import com.example.a7minutesworkout.util.CountDownTimer
 import com.example.a7minutesworkout.util.TextSpeech
 import java.util.Locale
@@ -50,8 +48,6 @@ class ExerciseActivity : AppCompatActivity() {
             .inflate(layoutInflater)
             .also { setContentView(it.root) }
 
-        //setContentView(R.layout.activity_exercise)
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -64,12 +60,7 @@ class ExerciseActivity : AppCompatActivity() {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         onBackPressedDispatcher
-            .addCallback(this, object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    val dialog = createCustomDialog()
-                    dialog.show()
-                }
-            })
+            .addCallback(this, BackPressedCallback(this))
 
         binding
             ?.toolbar
@@ -79,7 +70,8 @@ class ExerciseActivity : AppCompatActivity() {
         textSpeech = TextSpeech.create(this)
 
         adapter = ExerciseStatusAdapter(model.getExercises())
-        binding?.rvExerciseStatus?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding?.rvExerciseStatus?.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding?.rvExerciseStatus?.adapter = adapter
 
         val soundURI = Uri.parse(Constants.PRESS_START_URI)
@@ -132,7 +124,8 @@ class ExerciseActivity : AppCompatActivity() {
         binding?.exerciseImage?.setImageResource(exercise.image)
         binding?.progressBarExercise?.max = startTimeExercise.toInt()
         binding?.progressBarExercise?.progress = startTimeExercise.toInt()
-        binding?.tvTimerExercise?.text = String.format(Locale.getDefault(), "%02d", startTimeExercise)
+        binding?.tvTimerExercise?.text =
+            String.format(Locale.getDefault(), "%02d", startTimeExercise)
         countDownTimer.cancel()
         countDownTimer =
             CountDownTimer(startTimeExercise * 1000L, 1000)
@@ -177,24 +170,6 @@ class ExerciseActivity : AppCompatActivity() {
     fun onFinishWorkout() {
         Intent(this, FinishActivity::class.java)
             .also { startActivity(it); finish() }
-    }
-
-    private fun createCustomDialog(): Dialog {
-        val warningCustomDialog = Dialog(this)
-        val dialogBinding = DialogCustomBackConfirmationBinding
-            .inflate(layoutInflater)
-            .also { warningCustomDialog.setContentView(it.root) }
-        warningCustomDialog.setCanceledOnTouchOutside(false)
-
-        dialogBinding
-            .tvYes
-            .setOnClickListener { warningCustomDialog.dismiss(); finish() }
-
-        dialogBinding
-            .tvNo
-            .setOnClickListener { warningCustomDialog.dismiss() }
-
-        return warningCustomDialog
     }
 
     override fun onDestroy() {

@@ -33,15 +33,18 @@ class ExerciseStatusAdapter(private val exercises: List<Exercise>): RecyclerView
             tvExerciseStatus.text = String.format(Locale.getDefault(), "%02d", exercise.id)
             when(exercise.status){
                 ExerciseStatus.COMPLETED -> {
-                    tvExerciseStatus.background = ContextCompat.getDrawable(this.itemView.context, R.drawable.item_circular_color_accent_background)
+                    tvExerciseStatus.background = ContextCompat
+                        .getDrawable(this.itemView.context, R.drawable.item_circular_color_accent_background)
                     tvExerciseStatus.setTextColor(Color.parseColor("#FFFFFF"))
                 }
                 ExerciseStatus.IN_PROGRESS -> {
-                    tvExerciseStatus.background = ContextCompat.getDrawable(this.itemView.context, R.drawable.item_circular_thin_color_accent_border)
+                    tvExerciseStatus.background = ContextCompat
+                        .getDrawable(this.itemView.context, R.drawable.item_circular_thin_color_accent_border)
                     tvExerciseStatus.setTextColor(Color.parseColor("#212121"))
                 }
                 ExerciseStatus.NOT_STARTED -> {
-                    tvExerciseStatus.background = ContextCompat.getDrawable(this.itemView.context, R.drawable.item_circular_color_grey_background)
+                    tvExerciseStatus.background = ContextCompat
+                        .getDrawable(this.itemView.context, R.drawable.item_circular_color_grey_background)
                     tvExerciseStatus.setTextColor(Color.parseColor("#212121"))
                 }
             }

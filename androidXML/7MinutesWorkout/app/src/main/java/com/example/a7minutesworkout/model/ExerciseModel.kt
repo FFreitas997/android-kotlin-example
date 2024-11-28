@@ -18,7 +18,7 @@ class ExerciseModel(val list: List<Exercise>) {
         list[position].status = status
     }
 
-    companion object Factory {
+    companion object {
         fun create(numberOfExercises: Int): ExerciseModel {
             val list = listOfExercises.take(numberOfExercises)
             return ExerciseModel(list)

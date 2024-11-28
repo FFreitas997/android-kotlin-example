@@ -38,7 +38,7 @@ class BMIActivity : AppCompatActivity() {
 
         setSupportActionBar(binding?.toolbar)
 
-        if (supportActionBar != null){
+        if (supportActionBar != null) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             supportActionBar?.title = getString(R.string.calculate_bmi_toolbar_title)
         }
@@ -50,7 +50,7 @@ class BMIActivity : AppCompatActivity() {
         binding
             ?.btnCalculateUnits
             ?.setOnClickListener {
-                when(statusMetric){
+                when (statusMetric) {
                     Metric.METRIC_UNITS -> onClickButtonMetricUnits()
                     Metric.US_UNITS -> onClickButtonUSUnits()
                     else -> throw IllegalStateException("Unexpected value: $statusMetric")
@@ -68,12 +68,14 @@ class BMIActivity : AppCompatActivity() {
                         statusMetric = Metric.METRIC_UNITS
                         binding?.btnCalculateUnits?.isEnabled = isValidMetricsUnitInput()
                     }
+
                     R.id.rbImperialUnits -> {
                         binding?.etMetricUnitHeight?.visibility = android.view.View.INVISIBLE
                         binding?.usMetrics?.visibility = android.view.View.VISIBLE
                         statusMetric = Metric.US_UNITS
                         binding?.btnCalculateUnits?.isEnabled = isValidUsMetricsInput()
                     }
+
                     else -> throw IllegalStateException("Unexpected value: $checkedId")
                 }
             }
@@ -107,38 +109,49 @@ class BMIActivity : AppCompatActivity() {
                 binding?.etMetricUnitWeightValue?.text.toString().isNotEmpty()
     }
 
-    private fun displayBMIResult(bmi: Float){
+    private fun displayBMIResult(bmi: Float) {
         val bmiLabel: String
         val bmiDescription: String
 
         when {
             bmi < 16 -> {
                 bmiLabel = getString(R.string.severely_underweight)
-                bmiDescription = getString(R.string.you_really_need_to_take_care_of_your_health_eat_more)
+                bmiDescription =
+                    getString(R.string.you_really_need_to_take_care_of_your_health_eat_more)
             }
+
             bmi < 18.5 -> {
                 bmiLabel = getString(R.string.underweight)
                 bmiDescription = getString(R.string.you_need_to_take_care_of_your_health_eat_more)
             }
+
             bmi < 25 -> {
                 bmiLabel = getString(R.string.normal)
                 bmiDescription = getString(R.string.congratulations_you_are_in_a_good_shape)
             }
+
             bmi < 30 -> {
                 bmiLabel = getString(R.string.overweight)
-                bmiDescription = getString(R.string.you_need_to_take_care_of_your_health_exercise_more)
+                bmiDescription =
+                    getString(R.string.you_need_to_take_care_of_your_health_exercise_more)
             }
+
             bmi < 35 -> {
                 bmiLabel = getString(R.string.obese_class_i_moderate)
-                bmiDescription = getString(R.string.you_need_to_take_care_of_your_health_exercise_more)
+                bmiDescription =
+                    getString(R.string.you_need_to_take_care_of_your_health_exercise_more)
             }
+
             bmi < 40 -> {
                 bmiLabel = getString(R.string.obese_class_ii_severe)
-                bmiDescription = getString(R.string.you_need_to_take_care_of_your_health_exercise_more)
+                bmiDescription =
+                    getString(R.string.you_need_to_take_care_of_your_health_exercise_more)
             }
+
             else -> {
                 bmiLabel = getString(R.string.obese_class_iii_very_severe)
-                bmiDescription = getString(R.string.you_need_to_take_care_of_your_health_exercise_more)
+                bmiDescription =
+                    getString(R.string.you_need_to_take_care_of_your_health_exercise_more)
             }
         }
 
@@ -149,7 +162,7 @@ class BMIActivity : AppCompatActivity() {
         binding?.llDisplayBMIResult?.visibility = android.view.View.VISIBLE
     }
 
-    private fun onClickButtonMetricUnits(){
+    private fun onClickButtonMetricUnits() {
         if (!isValidMetricsUnitInput() || inputHeight == null || inputWeight == null)
             return
 
@@ -161,7 +174,7 @@ class BMIActivity : AppCompatActivity() {
         displayBMIResult(bmiMetric)
     }
 
-    private fun onClickButtonUSUnits(){
+    private fun onClickButtonUSUnits() {
         if (!isValidUsMetricsInput() || feetValue == null || inchValue == null || inputWeight == null)
             return
 
