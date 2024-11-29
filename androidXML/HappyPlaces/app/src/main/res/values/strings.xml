@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Happy Places</string>
+    <string name="fab_content_desc">Plus Floating Button</string>
+    <string name="create_happy_place_title">Create Happy Place</string>
+</resources>
