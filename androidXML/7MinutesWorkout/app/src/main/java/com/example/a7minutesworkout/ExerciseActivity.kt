@@ -159,7 +159,7 @@ class ExerciseActivity : AppCompatActivity() {
         val exercise = model.getExerciseAt(currentExerciseIndex + 1)
         binding?.upcomingExerciseLl?.visibility = View.VISIBLE
         binding?.upcomingExercise?.text = getString(exercise.name)
-        textSpeech.speakOut("${getString(R.string.upcoming_exercise)} ${exercise.name}")
+        textSpeech.speakOut("${getString(R.string.upcoming_exercise)} ${getString(exercise.name)}")
     }
 
     fun onChangeStatus(position: Int, status: ExerciseStatus) {
