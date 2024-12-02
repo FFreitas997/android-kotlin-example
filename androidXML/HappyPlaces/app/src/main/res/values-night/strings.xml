@@ -2,4 +2,11 @@
 <resources>
     <string name="fab_content_desc">Plus Floating Button</string>
     <string name="create_happy_place_title">Create Happy Place</string>
+    <string name="content_description_end_icon_description">description icon</string>
+    <string name="date">Date</string>
+    <string name="content_description_end_icon_date">Date end icon</string>
+    <string name="location">Location</string>
+    <string name="content_description_end_icon_location">location end icon</string>
+    <string name="add_image">Add Image</string>
+    <string name="select_date">Select Date</string>
 </resources>
