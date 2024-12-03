@@ -1,4 +1,4 @@
-package com.example.happyplaces
+package com.example.happyplaces.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -17,8 +17,7 @@ class MainActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
 
-        layout = ActivityMainBinding
-            .inflate(layoutInflater)
+        layout = ActivityMainBinding.inflate(layoutInflater)
             .also { setContentView(it.root) }
 
         ViewCompat.setOnApplyWindowInsetsListener(layout?.root!!) { v, insets ->

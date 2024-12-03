@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CreateHappyPlaceActivity">
+    tools:context=".activity.CreateHappyPlaceActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
@@ -105,30 +105,36 @@
                     android:id="@+id/et_location"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:focusable="false"
                     android:inputType="text" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:text="@string/add_image"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/iv_place_image"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_image"
                 android:layout_width="@dimen/place_image_width"
                 android:layout_height="@dimen/place_image_height"
                 android:layout_gravity="center"
                 android:layout_margin="8dp"
-                android:padding="8dp"
-                android:background="@drawable/shape_image_view_border"
-                android:scaleType="centerCrop"
-                android:contentDescription="@string/image_description"
-                android:src="@drawable/add_screen_image_placeholder" />
+                android:elevation="10dp"
+                app:cardCornerRadius="10dp">
+
+                <ImageView
+                    android:id="@+id/iv_place_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/image_description"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/add_screen_image_placeholder" />
+
+                <androidx.camera.view.PreviewView
+                    android:id="@+id/viewFinder"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
+
+            </com.google.android.material.card.MaterialCardView>
+
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save"
