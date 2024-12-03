@@ -14,4 +14,8 @@
     <string name="add_image">Add Image</string>
     <string name="image_description">image description</string>
     <string name="select_date">Select Date</string>
+    <string name="place">place</string>
+    <string name="default_title">This is a title</string>
+    <string name="default_description">This is a description</string>
+    <string name="no_happy_place_available">No happy place available</string>
 </resources>

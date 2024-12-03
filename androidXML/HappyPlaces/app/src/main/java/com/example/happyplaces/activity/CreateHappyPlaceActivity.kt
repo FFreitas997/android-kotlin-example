@@ -165,7 +165,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
             val image = layout?.ivPlaceImage?.tag.toString()
 
             val model = HappyPlaceModel(
-                id = -1,
+                id = 0,
                 title = title,
                 description = description,
                 date = date,
