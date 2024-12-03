@@ -177,7 +177,6 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
 
             lifecycleScope.launch(Dispatchers.Main) {
                 repository.createHappyPlace(model)
-                onBackPressedDispatcher.onBackPressed()
                 finish()
             }
         }
