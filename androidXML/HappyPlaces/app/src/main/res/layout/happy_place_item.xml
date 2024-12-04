@@ -22,6 +22,7 @@
             android:layout_height="match_parent"
             android:contentDescription="@string/image_description"
             android:scaleType="centerCrop"
+            android:rotation="0"
             android:src="@drawable/add_screen_image_placeholder" />
 
     </com.google.android.material.card.MaterialCardView>
@@ -30,7 +31,7 @@
         android:id="@+id/ll_text"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_margin="16dp"
+        android:layout_margin="8dp"
         android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toEndOf="@id/cv_image"

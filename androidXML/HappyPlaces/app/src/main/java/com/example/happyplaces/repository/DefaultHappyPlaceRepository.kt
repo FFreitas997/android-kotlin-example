@@ -9,9 +9,10 @@ class DefaultHappyPlaceRepository(private val dao: HappyPlaceDao): HappyPlacesRe
 
     override suspend fun createHappyPlace(happyPlace: HappyPlaceModel) {
         val entity = HappyPlaceEntity(
-            id = -1,
+            id = null,
             title = happyPlace.title,
             image = happyPlace.image,
+            imageType = happyPlace.imageType.name,
             description = happyPlace.description,
             date = happyPlace.date,
             location = happyPlace.location,
@@ -28,6 +29,7 @@ class DefaultHappyPlaceRepository(private val dao: HappyPlaceDao): HappyPlacesRe
             image = happyPlace.image,
             description = happyPlace.description,
             date = happyPlace.date,
+            imageType = happyPlace.imageType.name,
             location = happyPlace.location,
             latitude = happyPlace.latitude,
             longitude = happyPlace.longitude

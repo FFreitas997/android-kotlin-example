@@ -1,9 +1,12 @@
 package com.example.happyplaces.adapter
 
-import android.net.Uri
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.happyplaces.data.ImageType
 import com.example.happyplaces.database.HappyPlaceEntity
 import com.example.happyplaces.databinding.HappyPlaceItemBinding
 
@@ -29,9 +32,23 @@ class HappyPlacesAdapter(private val records: List<HappyPlaceEntity>) :
         private val descriptionView = binding.tvDescription
 
         fun bind(record: HappyPlaceEntity) {
-            imageView.setImageURI(Uri.parse(record.image))
+            val bitmap = BitmapFactory
+                .decodeByteArray(record.image, 0, record.image.size)
+
+            val recordImage =
+                if (ImageType.valueOf(record.imageType) == ImageType.CAMERA)
+                    rotateBitmap(bitmap)
+                else bitmap
+
+            imageView.setImageBitmap(recordImage)
             titleView.text = record.title
             descriptionView.text = record.description
+        }
+
+        private fun rotateBitmap(bitmap: Bitmap): Bitmap {
+            val matrix = Matrix()
+            matrix.postRotate(90f)
+            return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
         }
     }
 }

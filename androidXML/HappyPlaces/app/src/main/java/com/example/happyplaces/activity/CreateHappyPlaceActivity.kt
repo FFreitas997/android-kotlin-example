@@ -3,6 +3,9 @@ package com.example.happyplaces.activity
 import android.Manifest
 import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -27,6 +30,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.happyplaces.HappyPlaceApplication
 import com.example.happyplaces.R
 import com.example.happyplaces.data.HappyPlaceModel
+import com.example.happyplaces.data.ImageType
 import com.example.happyplaces.databinding.ActivityCreateHappyPlaceBinding
 import com.example.happyplaces.repository.DefaultHappyPlaceRepository
 import com.example.happyplaces.repository.HappyPlacesRepository
@@ -36,6 +40,7 @@ import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -57,7 +62,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                 return@registerForActivityResult
             }
             layout?.ivPlaceImage?.setImageURI(uri)
-            layout?.ivPlaceImage?.tag = uri.toString()
+            layout?.ivPlaceImage?.tag = "${ImageType.GALLERY}€$uri"
         }
 
     private var layout: ActivityCreateHappyPlaceBinding? = null
@@ -157,20 +162,22 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                 }
             }
 
-
             val title = layout?.etTitle?.text.toString().trim()
             val description = layout?.etDescription?.text.toString().trim()
             val date = layout?.etDate?.text.toString().trim()
             val location = layout?.etLocation?.text.toString().trim()
-            val image = layout?.ivPlaceImage?.tag.toString()
+
+            val aux = layout?.ivPlaceImage?.tag.toString().split("€")
+
+            val image = convertURItoByteArray(aux[1])
 
             val model = HappyPlaceModel(
-                id = 0,
                 title = title,
                 description = description,
                 date = date,
+                imageType = ImageType.valueOf(aux[0]),
                 location = location,
-                image = image,
+                image = image ?: byteArrayOf(),
                 latitude = 0.0,
                 longitude = 0.0
             )
@@ -188,6 +195,20 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
         layout?.etDate?.setText(sdf.format(cal.time))
+    }
+
+    private fun convertURItoByteArray(uri: String): ByteArray? {
+        try {
+            val inputStream = contentResolver.openInputStream(Uri.parse(uri))
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            bitmap
+                .compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+            return byteArrayOutputStream.toByteArray()
+        } catch (e: Exception) {
+            Log.e("ImageLoading", "Error loading image data", e)
+            return null
+        }
     }
 
     private fun onSelectImageCamera() {
@@ -251,7 +272,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                         layout?.viewFinder?.visibility = View.GONE
                         val uri = outputFileResults.savedUri ?: return
                         layout?.ivPlaceImage?.setImageURI(uri)
-                        layout?.ivPlaceImage?.tag = uri.toString()
+                        layout?.ivPlaceImage?.tag = "${ImageType.CAMERA}€$uri"
                     }
 
                     override fun onError(exception: ImageCaptureException) {
@@ -274,6 +295,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
+            .setTargetRotation(layout?.viewFinder?.display?.rotation ?: 0)
             .build()
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
