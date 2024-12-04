@@ -18,4 +18,5 @@
     <string name="default_title">This is a title</string>
     <string name="default_description">This is a description</string>
     <string name="no_happy_place_available">No happy place available</string>
+    <string name="toolbar_image">toolbar image</string>
 </resources>
