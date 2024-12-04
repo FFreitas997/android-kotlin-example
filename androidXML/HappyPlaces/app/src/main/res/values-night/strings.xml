@@ -12,4 +12,5 @@
     <string name="place">place</string>
     <string name="default_description">This is a description</string>
     <string name="toolbar_image">toolbar image</string>
+    <string name="details_image">details image</string>
 </resources>

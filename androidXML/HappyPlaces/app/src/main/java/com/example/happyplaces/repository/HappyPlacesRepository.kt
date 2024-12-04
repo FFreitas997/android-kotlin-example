@@ -10,5 +10,7 @@ interface HappyPlacesRepository {
 
     suspend fun deleteHappyPlace(happyPlace: HappyPlaceModel)
 
-    fun getHappyPlaces(): Flow<List<HappyPlaceEntity>>
+    fun readHappyPlace(id: Int): Flow<HappyPlaceEntity>
+
+    fun readHappyPlaces(): Flow<List<HappyPlaceEntity>>
 }

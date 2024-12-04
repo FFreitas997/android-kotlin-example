@@ -17,4 +17,7 @@ interface HappyPlaceDao {
 
     @Query("SELECT * FROM happy_places")
     fun getAllHappyPlaces(): Flow<List<HappyPlaceEntity>>
+
+    @Query("SELECT * FROM happy_places WHERE id = :id")
+    fun getHappyPlaceById(id: Int): Flow<HappyPlaceEntity>
 }

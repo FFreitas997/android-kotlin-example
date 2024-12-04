@@ -1,4 +1,4 @@
-package com.example.happyplaces.activity
+package com.example.happyplaces.activities
 
 import android.Manifest
 import android.content.ContentValues
@@ -52,13 +52,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri == null) {
-                AlertDialog.Builder(this@CreateHappyPlaceActivity)
-                    .setTitle("Error loading image")
-                    .setMessage("An error occurred while loading the image. Please try again.")
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setCancelable(true)
-                    .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
-                    .show()
+                Toast.makeText(this, "Error loading image", Toast.LENGTH_SHORT).show()
                 return@registerForActivityResult
             }
             layout?.ivPlaceImage?.setImageURI(uri)
@@ -145,15 +139,15 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
 
             when {
                 layout?.etTitle?.text.isNullOrEmpty() -> {
-                    layout?.etTitle?.error = "Title is required"
+                    Toast.makeText(this, "Title is required", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 layout?.etDescription?.text.isNullOrEmpty() -> {
-                    layout?.etDescription?.error = "Description is required"
+                    Toast.makeText(this, "Description is required", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 layout?.etLocation?.text.isNullOrEmpty() -> {
-                    layout?.etLocation?.error = "Location is required"
+                    Toast.makeText(this, "Location is required", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 layout?.ivPlaceImage?.tag == null -> {
@@ -212,30 +206,24 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
     }
 
     private fun onSelectImageCamera() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             startCamera()
             return
         }
         if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            AlertDialog.Builder(this)
+            AlertDialog
+                .Builder(this)
                 .setTitle("Permission needed")
                 .setMessage("Camera permission is needed to take a photo")
-                .setCancelable(false)
+                .setCancelable(true)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
                 .create()
                 .show()
             return
         }
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.CAMERA),
-            REQUEST_CODE_CAMERA
-        )
+        ActivityCompat
+            .requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CODE_CAMERA)
     }
 
     private fun captureCameraPhoto() {
@@ -246,20 +234,21 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         val name = SimpleDateFormat(filenameFormat, Locale.getDefault())
             .format(System.currentTimeMillis())
 
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-            }
+        val contentValues = ContentValues()
+            .apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P)
+                    put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
         }
 
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(
-            contentResolver,
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            contentValues
-        )
-            .build()
+        val outputOptions = ImageCapture
+            .OutputFileOptions
+            .Builder(
+                contentResolver,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                contentValues
+            ).build()
 
         imageCapture
             .takePicture(
@@ -268,9 +257,9 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                 object : ImageCapture.OnImageSavedCallback {
 
                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        val uri = outputFileResults.savedUri ?: return
                         layout?.ivPlaceImage?.visibility = View.VISIBLE
                         layout?.viewFinder?.visibility = View.GONE
-                        val uri = outputFileResults.savedUri ?: return
                         layout?.ivPlaceImage?.setImageURI(uri)
                         layout?.ivPlaceImage?.tag = "${ImageType.CAMERA}€$uri"
                     }
@@ -279,20 +268,15 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                         layout?.ivPlaceImage?.visibility = View.VISIBLE
                         layout?.viewFinder?.visibility = View.GONE
                         Log.e("CreateHappyPlaceActivity", "Error taking photo", exception)
-                        AlertDialog.Builder(this@CreateHappyPlaceActivity)
-                            .setTitle("Error taking photo")
-                            .setMessage("An error occurred while taking the photo. Please try again.")
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .setCancelable(true)
-                            .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
-                            .show()
+                        Toast.makeText(this@CreateHappyPlaceActivity, "Error taking photo", Toast.LENGTH_SHORT).show()
                     }
                 }
             )
     }
 
     private fun startCamera() {
-        imageCapture = ImageCapture.Builder()
+        imageCapture = ImageCapture
+            .Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
             .setTargetRotation(layout?.viewFinder?.display?.rotation ?: 0)
@@ -302,7 +286,8 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
 
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder()
+            val preview = Preview
+                .Builder()
                 .build()
                 .also { it.surfaceProvider = layout?.viewFinder?.surfaceProvider }
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -341,7 +326,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                     AlertDialog.Builder(this)
                         .setTitle("Permission denied")
                         .setMessage("Camera permission is needed to take a photo")
-                        .setCancelable(false)
+                        .setCancelable(true)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
                         .create()

@@ -7,7 +7,4 @@ class HappyPlaceApplication: Application() {
 
     val db by lazy { HappyPlaceDatabase.getDatabase(this) }
 
-    override fun onCreate() {
-        super.onCreate()
-    }
 }

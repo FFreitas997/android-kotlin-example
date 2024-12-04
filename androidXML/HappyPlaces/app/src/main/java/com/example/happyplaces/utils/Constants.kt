@@ -4,4 +4,6 @@ object Constants {
 
     const val REQUEST_CODE_CAMERA = 1
     const val DATABASE_NAME = "happy_place_db"
+
+    const val EXTRA_PLACE_DETAILS = "extra_place_details"
 }

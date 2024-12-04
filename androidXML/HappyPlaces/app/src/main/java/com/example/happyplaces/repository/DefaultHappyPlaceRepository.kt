@@ -37,7 +37,11 @@ class DefaultHappyPlaceRepository(private val dao: HappyPlaceDao): HappyPlacesRe
         dao.deleteHappyPlace(entity)
     }
 
-    override fun getHappyPlaces(): Flow<List<HappyPlaceEntity>> {
+    override fun readHappyPlace(id: Int): Flow<HappyPlaceEntity> {
+        return dao.getHappyPlaceById(id)
+    }
+
+    override fun readHappyPlaces(): Flow<List<HappyPlaceEntity>> {
         return dao.getAllHappyPlaces()
     }
 
