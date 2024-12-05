@@ -21,7 +21,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="@string/image_description"
-            android:rotation="0"
             android:scaleType="centerCrop"
             android:src="@drawable/add_screen_image_placeholder" />
 
@@ -41,18 +40,16 @@
             android:id="@+id/tv_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
             android:text="@string/default_title"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:text="@string/default_description"
-            android:textSize="14sp" />
+            android:layout_marginTop="8dp"
+            android:text="@string/default_description" />
 
     </LinearLayout>
 

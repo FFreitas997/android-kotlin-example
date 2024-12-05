@@ -34,11 +34,12 @@ import com.example.happyplaces.data.ImageType
 import com.example.happyplaces.databinding.ActivityCreateHappyPlaceBinding
 import com.example.happyplaces.repository.DefaultHappyPlaceRepository
 import com.example.happyplaces.repository.HappyPlacesRepository
+import com.example.happyplaces.utils.Constants
 import com.example.happyplaces.utils.Constants.REQUEST_CODE_CAMERA
+import com.example.happyplaces.utils.HappyPlaceMapper
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
@@ -64,6 +65,8 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
     private lateinit var datePicker: MaterialDatePicker<Long>
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var repository: HappyPlacesRepository
+    private var placeID: Int? = null
+    private var editModel: HappyPlaceModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -132,24 +135,22 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
 
         layout?.btnSave?.setOnClickListener {
 
-            layout?.etTitle?.error = null
-            layout?.etDescription?.error = null
-            layout?.etLocation?.error = null
-            layout?.etDate?.error = null
-
             when {
                 layout?.etTitle?.text.isNullOrEmpty() -> {
                     Toast.makeText(this, "Title is required", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
+
                 layout?.etDescription?.text.isNullOrEmpty() -> {
                     Toast.makeText(this, "Description is required", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
+
                 layout?.etLocation?.text.isNullOrEmpty() -> {
                     Toast.makeText(this, "Location is required", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
+
                 layout?.ivPlaceImage?.tag == null -> {
                     Toast.makeText(this, "Image is required", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
@@ -163,7 +164,16 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
 
             val aux = layout?.ivPlaceImage?.tag.toString().split("€")
 
-            val image = convertURItoByteArray(aux[1])
+            val image =
+                if (placeID == null)
+                    convertURItoByteArray(aux[1])
+                else {
+                    if (aux[1].isEmpty())
+                        editModel?.image
+                    else
+                        convertURItoByteArray(aux[1])
+                }
+
 
             val model = HappyPlaceModel(
                 title = title,
@@ -176,10 +186,13 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                 longitude = 0.0
             )
 
-            lifecycleScope.launch(Dispatchers.Main) {
-                repository.createHappyPlace(model)
-                finish()
+            if (placeID != null) {
+                model.id = placeID
+                onEditHappyPlace(model)
+                return@setOnClickListener
             }
+
+            onCreateHappyPlace(model)
         }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -189,6 +202,48 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
         layout?.etDate?.setText(sdf.format(cal.time))
+
+        if (intent.hasExtra(Constants.EXTRA_PLACE_EDIT)) {
+            placeID = intent.getIntExtra(Constants.EXTRA_PLACE_EDIT, -1)
+
+            lifecycleScope.launch {
+                repository
+                    .readHappyPlace(placeID ?: throw IllegalArgumentException("Invalid ID"))
+                    .collect { handleHappyPlaceUpdate(HappyPlaceMapper.mapEntityToModel(it)) }
+            }
+        }
+    }
+
+    private fun onCreateHappyPlace(model: HappyPlaceModel) {
+        lifecycleScope.launch {
+            repository.createHappyPlace(model)
+            finish()
+        }
+    }
+
+    private fun onEditHappyPlace(model: HappyPlaceModel) {
+        lifecycleScope.launch {
+            repository.updateHappyPlace(model)
+            finish()
+        }
+    }
+
+    private fun handleHappyPlaceUpdate(model: HappyPlaceModel) {
+        supportActionBar?.title = "Edit Happy Place"
+        layout?.etTitle?.setText(model.title)
+        layout?.etDescription?.setText(model.description)
+        layout?.etDate?.setText(model.date)
+        layout?.etLocation?.setText(model.location)
+        layout?.ivPlaceImage?.setImageBitmap(
+            BitmapFactory.decodeByteArray(
+                model.image,
+                0,
+                model.image.size
+            )
+        )
+        layout?.ivPlaceImage?.tag = "${model.imageType}€"
+        layout?.btnSave?.text = getString(R.string.update)
+        this.editModel = model
     }
 
     private fun convertURItoByteArray(uri: String): ByteArray? {
@@ -206,7 +261,11 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
     }
 
     private fun onSelectImageCamera() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             startCamera()
             return
         }
@@ -240,7 +299,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P)
                     put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-        }
+            }
 
         val outputOptions = ImageCapture
             .OutputFileOptions
@@ -268,7 +327,13 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                         layout?.ivPlaceImage?.visibility = View.VISIBLE
                         layout?.viewFinder?.visibility = View.GONE
                         Log.e("CreateHappyPlaceActivity", "Error taking photo", exception)
-                        Toast.makeText(this@CreateHappyPlaceActivity, "Error taking photo", Toast.LENGTH_SHORT).show()
+                        Toast
+                            .makeText(
+                                this@CreateHappyPlaceActivity,
+                                "Error taking photo",
+                                Toast.LENGTH_SHORT
+                            )
+                            .show()
                     }
                 }
             )
@@ -316,7 +381,11 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             REQUEST_CODE_CAMERA -> {

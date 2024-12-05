@@ -3,46 +3,42 @@ package com.example.happyplaces.repository
 import com.example.happyplaces.data.HappyPlaceModel
 import com.example.happyplaces.database.HappyPlaceDao
 import com.example.happyplaces.database.HappyPlaceEntity
+import com.example.happyplaces.utils.HappyPlaceMapper
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
-class DefaultHappyPlaceRepository(private val dao: HappyPlaceDao): HappyPlacesRepository {
+class DefaultHappyPlaceRepository(
+    private val dataAccess: HappyPlaceDao,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+) : HappyPlacesRepository {
 
-    override suspend fun createHappyPlace(happyPlace: HappyPlaceModel) {
-        val entity = HappyPlaceEntity(
-            id = null,
-            title = happyPlace.title,
-            image = happyPlace.image,
-            imageType = happyPlace.imageType.name,
-            description = happyPlace.description,
-            date = happyPlace.date,
-            location = happyPlace.location,
-            latitude = happyPlace.latitude,
-            longitude = happyPlace.longitude
-        )
-        dao.insertHappyPlace(entity)
-    }
+    override suspend fun createHappyPlace(happyPlace: HappyPlaceModel): Unit =
+        withContext(dispatcher) {
+            HappyPlaceMapper
+                .mapModelToEntity(happyPlace)
+                .also { dataAccess.insertHappyPlace(it) }
+        }
 
-    override suspend fun deleteHappyPlace(happyPlace: HappyPlaceModel) {
-        val entity = HappyPlaceEntity(
-            id = happyPlace.id,
-            title = happyPlace.title,
-            image = happyPlace.image,
-            description = happyPlace.description,
-            date = happyPlace.date,
-            imageType = happyPlace.imageType.name,
-            location = happyPlace.location,
-            latitude = happyPlace.latitude,
-            longitude = happyPlace.longitude
-        )
-        dao.deleteHappyPlace(entity)
-    }
+    override suspend fun updateHappyPlace(happyPlace: HappyPlaceModel): Unit =
+        withContext(dispatcher) {
+            HappyPlaceMapper
+                .mapModelToEntity(happyPlace)
+                .also { dataAccess.updateHappyPlace(it) }
+        }
 
-    override fun readHappyPlace(id: Int): Flow<HappyPlaceEntity> {
-        return dao.getHappyPlaceById(id)
-    }
+    override suspend fun deleteHappyPlace(happyPlace: HappyPlaceModel): Unit =
+        withContext(dispatcher) {
+            HappyPlaceMapper
+                .mapModelToEntity(happyPlace)
+                .also { dataAccess.deleteHappyPlace(it) }
+        }
 
-    override fun readHappyPlaces(): Flow<List<HappyPlaceEntity>> {
-        return dao.getAllHappyPlaces()
-    }
+    override fun readHappyPlace(id: Int): Flow<HappyPlaceEntity> =
+        dataAccess.getHappyPlaceById(id)
+
+    override fun readHappyPlaces(): Flow<List<HappyPlaceEntity>> =
+        dataAccess.getAllHappyPlaces()
 
 }

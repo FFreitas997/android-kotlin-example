@@ -1,16 +1,20 @@
 package com.example.happyplaces.adapter
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.happyplaces.activities.CreateHappyPlaceActivity
 import com.example.happyplaces.data.ImageType
 import com.example.happyplaces.database.HappyPlaceEntity
 import com.example.happyplaces.databinding.HappyPlaceItemBinding
+import com.example.happyplaces.utils.Constants
 
-class HappyPlacesAdapter(private val records: List<HappyPlaceEntity>) : RecyclerView.Adapter<HappyPlacesAdapter.ViewHolder>() {
+class HappyPlacesAdapter(private val records: MutableList<HappyPlaceEntity>) : RecyclerView.Adapter<HappyPlacesAdapter.ViewHolder>() {
 
     private var onItemClickListener: OnItemClickListener? = null
 
@@ -30,6 +34,21 @@ class HappyPlacesAdapter(private val records: List<HappyPlaceEntity>) : Recycler
 
     fun setOnItemClickListener(listener: OnItemClickListener) {
         onItemClickListener = listener
+    }
+
+    fun notifyEditItem(activity: Activity, position: Int, requestCode: Int) {
+        val record = records[position]
+        Intent(activity, CreateHappyPlaceActivity::class.java)
+            .apply { putExtra(Constants.EXTRA_PLACE_EDIT, record.id) }
+            .also { activity.startActivityForResult(it, requestCode) }
+        notifyItemChanged(position)
+    }
+
+    fun removeAt(position: Int): HappyPlaceEntity {
+        val item = records[position]
+        records.removeAt(position)
+        notifyItemRemoved(position)
+        return item
     }
 
     class ViewHolder(binding: HappyPlaceItemBinding) : RecyclerView.ViewHolder(binding.root) {

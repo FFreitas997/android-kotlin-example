@@ -32,8 +32,9 @@
 
             <ImageView
                 android:id="@+id/iv_place_image"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:layout_constraintHeight_max="350dp"
                 android:layout_margin="16dp"
                 android:contentDescription="@string/details_image"
                 android:scaleType="centerCrop"

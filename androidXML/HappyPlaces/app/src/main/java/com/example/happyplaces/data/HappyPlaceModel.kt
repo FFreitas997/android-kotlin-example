@@ -1,7 +1,7 @@
 package com.example.happyplaces.data
 
 data class HappyPlaceModel(
-    val id: Int? = null,
+    var id: Int? = null,
     val title: String,
     val description: String,
     val date: String,

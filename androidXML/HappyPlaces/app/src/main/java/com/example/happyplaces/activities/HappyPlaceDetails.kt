@@ -62,6 +62,7 @@ class HappyPlaceDetails : AppCompatActivity() {
                     layout?.tvDescription?.text = place.description
                     supportActionBar?.title = place.title
                     layout?.ivPlaceImage?.setImageBitmap(recordImage)
+                    layout?.tvLocation?.text = place.location
                 }
         }
     }

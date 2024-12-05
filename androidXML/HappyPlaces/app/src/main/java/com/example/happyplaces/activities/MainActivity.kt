@@ -8,17 +8,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.happyplaces.HappyPlaceApplication
 import com.example.happyplaces.adapter.HappyPlacesAdapter
 import com.example.happyplaces.adapter.OnItemClickListener
-import com.example.happyplaces.data.HappyPlaceModel
-import com.example.happyplaces.data.ImageType
+import com.example.happyplaces.adapter.utils.SwipeToDeleteCallback
 import com.example.happyplaces.database.HappyPlaceEntity
 import com.example.happyplaces.databinding.ActivityMainBinding
 import com.example.happyplaces.repository.DefaultHappyPlaceRepository
 import com.example.happyplaces.repository.HappyPlacesRepository
 import com.example.happyplaces.utils.Constants.EXTRA_PLACE_DETAILS
+import com.example.happyplaces.utils.Constants.REQUEST_CODE_ADD_PLACE
+import com.example.happyplaces.adapter.utils.SwipeToEditCallback
+import com.example.happyplaces.utils.HappyPlaceMapper
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -63,31 +66,47 @@ class MainActivity : AppCompatActivity() {
             layout?.recyclerView?.visibility = View.GONE
             return
         }
-        val adapter = HappyPlacesAdapter(list)
+        val adapter = HappyPlacesAdapter(list.toMutableList())
         layout?.recyclerView?.adapter = adapter
         layout?.recyclerView?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
         adapter.setOnItemClickListener(object : OnItemClickListener {
             override fun onClick(position: Int) {
                 if (position < 0 || list.isEmpty()) return
-                val record = list[position].let {
-                    HappyPlaceModel(
-                        id = it.id,
-                        title = it.title,
-                        description = it.description,
-                        date = it.date,
-                        location = it.location,
-                        image = it.image,
-                        imageType = ImageType.valueOf(it.imageType),
-                        latitude = it.latitude,
-                        longitude = it.longitude
-                    )
-                }
+
+                val itemID = list[position].id ?: return
+
                 Intent(this@MainActivity, HappyPlaceDetails::class.java)
-                    .also { it.putExtra(EXTRA_PLACE_DETAILS, record.id ?: -1) }
+                    .also { it.putExtra(EXTRA_PLACE_DETAILS, itemID) }
                     .also { startActivity(it) }
             }
         })
+
+        val editSwipeHandler = object : SwipeToEditCallback(this) {
+            override fun onSwiped(position: Int) {
+                val rvAdapter = layout?.recyclerView?.adapter as HappyPlacesAdapter
+                rvAdapter.notifyEditItem(this@MainActivity, position, REQUEST_CODE_ADD_PLACE)
+            }
+        }
+
+        val deleteSwipeHandler = object : SwipeToDeleteCallback(this) {
+            override fun onSwiped(position: Int) {
+                val rvAdapter = layout?.recyclerView?.adapter as HappyPlacesAdapter
+                val itemDeleted = HappyPlaceMapper.mapEntityToModel(rvAdapter.removeAt(position))
+                lifecycleScope
+                    .launch {
+                        repository.deleteHappyPlace(itemDeleted)
+                        repository
+                            .readHappyPlaces()
+                            .collect { handleResultFromDB(it) }
+                    }
+            }
+        }
+
+        val editItemTouchHelper = ItemTouchHelper(editSwipeHandler)
+        val deleteItemTouchHelper = ItemTouchHelper(deleteSwipeHandler)
+        editItemTouchHelper.attachToRecyclerView(layout?.recyclerView)
+        deleteItemTouchHelper.attachToRecyclerView(layout?.recyclerView)
     }
 
     override fun onDestroy() {
