@@ -25,9 +25,6 @@ data class HappyPlaceEntity(
     @ColumnInfo(name = "image")
     val image: ByteArray,
 
-    @ColumnInfo(name = "image_type")
-    val imageType: String,
-
     @ColumnInfo(name = "latitude")
     val latitude: Double,
 

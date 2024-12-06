@@ -7,7 +7,6 @@ data class HappyPlaceModel(
     val date: String,
     val location: String,
     val image: ByteArray,
-    val imageType: ImageType,
     val latitude: Double,
     val longitude: Double
 ) {

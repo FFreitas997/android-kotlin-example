@@ -2,14 +2,11 @@ package com.example.happyplaces.adapter
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Matrix
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.happyplaces.activities.CreateHappyPlaceActivity
-import com.example.happyplaces.data.ImageType
 import com.example.happyplaces.database.HappyPlaceEntity
 import com.example.happyplaces.databinding.HappyPlaceItemBinding
 import com.example.happyplaces.utils.Constants
@@ -36,11 +33,11 @@ class HappyPlacesAdapter(private val records: MutableList<HappyPlaceEntity>) : R
         onItemClickListener = listener
     }
 
-    fun notifyEditItem(activity: Activity, position: Int, requestCode: Int) {
+    fun notifyEditItem(activity: Activity, position: Int) {
         val record = records[position]
         Intent(activity, CreateHappyPlaceActivity::class.java)
             .apply { putExtra(Constants.EXTRA_PLACE_EDIT, record.id) }
-            .also { activity.startActivityForResult(it, requestCode) }
+            .also { activity.startActivity(it) }
         notifyItemChanged(position)
     }
 
@@ -61,20 +58,9 @@ class HappyPlacesAdapter(private val records: MutableList<HappyPlaceEntity>) : R
             val bitmap = BitmapFactory
                 .decodeByteArray(record.image, 0, record.image.size)
 
-            val recordImage =
-                if (ImageType.valueOf(record.imageType) == ImageType.CAMERA)
-                    rotateBitmap(bitmap)
-                else bitmap
-
-            imageView.setImageBitmap(recordImage)
+            imageView.setImageBitmap(bitmap)
             titleView.text = record.title
             descriptionView.text = record.description
-        }
-
-        private fun rotateBitmap(bitmap: Bitmap): Bitmap {
-            val matrix = Matrix()
-            matrix.postRotate(90f)
-            return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
         }
     }
 }

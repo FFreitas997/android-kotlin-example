@@ -101,6 +101,8 @@
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_location"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text" />
@@ -123,13 +125,6 @@
                     android:contentDescription="@string/image_description"
                     android:scaleType="centerCrop"
                     android:src="@drawable/add_screen_image_placeholder" />
-
-                <androidx.camera.view.PreviewView
-                    android:id="@+id/viewFinder"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone" />
 
             </com.google.android.material.card.MaterialCardView>
 

@@ -21,4 +21,11 @@
     <string name="toolbar_image">toolbar image</string>
     <string name="details_image">details image</string>
     <string name="update">Update</string>
+    <string name="select_photo_form_gallery">Select photo form Gallery</string>
+    <string name="capture_photo_from_camera">Capture photo from Camera</string>
+    <string name="select_action">Select Action</string>
+    <string name="take_a_picture">Take a picture</string>
+    <string name="take_picture">Take Picture</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit_happy_place">Edit Happy Place</string>
 </resources>

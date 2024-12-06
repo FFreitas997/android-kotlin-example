@@ -1,7 +1,6 @@
 package com.example.happyplaces.utils
 
 import com.example.happyplaces.data.HappyPlaceModel
-import com.example.happyplaces.data.ImageType
 import com.example.happyplaces.database.HappyPlaceEntity
 
 object HappyPlaceMapper {
@@ -11,7 +10,6 @@ object HappyPlaceMapper {
             id = entity.id,
             title = entity.title,
             image = entity.image,
-            imageType = ImageType.valueOf(entity.imageType),
             description = entity.description,
             date = entity.date,
             location = entity.location,
@@ -25,7 +23,6 @@ object HappyPlaceMapper {
             id = model.id,
             title = model.title,
             image = model.image,
-            imageType = model.imageType.name,
             description = model.description,
             date = model.date,
             location = model.location,

@@ -14,13 +14,12 @@ import com.example.happyplaces.HappyPlaceApplication
 import com.example.happyplaces.adapter.HappyPlacesAdapter
 import com.example.happyplaces.adapter.OnItemClickListener
 import com.example.happyplaces.adapter.utils.SwipeToDeleteCallback
+import com.example.happyplaces.adapter.utils.SwipeToEditCallback
 import com.example.happyplaces.database.HappyPlaceEntity
 import com.example.happyplaces.databinding.ActivityMainBinding
 import com.example.happyplaces.repository.DefaultHappyPlaceRepository
 import com.example.happyplaces.repository.HappyPlacesRepository
 import com.example.happyplaces.utils.Constants.EXTRA_PLACE_DETAILS
-import com.example.happyplaces.utils.Constants.REQUEST_CODE_ADD_PLACE
-import com.example.happyplaces.adapter.utils.SwipeToEditCallback
 import com.example.happyplaces.utils.HappyPlaceMapper
 import kotlinx.coroutines.launch
 
@@ -34,7 +33,8 @@ class MainActivity : AppCompatActivity() {
 
         enableEdgeToEdge()
 
-        layout = ActivityMainBinding.inflate(layoutInflater)
+        layout = ActivityMainBinding
+            .inflate(layoutInflater)
             .also { setContentView(it.root) }
 
         ViewCompat.setOnApplyWindowInsetsListener(layout?.root!!) { v, insets ->
@@ -73,11 +73,9 @@ class MainActivity : AppCompatActivity() {
         adapter.setOnItemClickListener(object : OnItemClickListener {
             override fun onClick(position: Int) {
                 if (position < 0 || list.isEmpty()) return
-
                 val itemID = list[position].id ?: return
-
                 Intent(this@MainActivity, HappyPlaceDetails::class.java)
-                    .also { it.putExtra(EXTRA_PLACE_DETAILS, itemID) }
+                    .apply { putExtra(EXTRA_PLACE_DETAILS, itemID) }
                     .also { startActivity(it) }
             }
         })
@@ -85,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         val editSwipeHandler = object : SwipeToEditCallback(this) {
             override fun onSwiped(position: Int) {
                 val rvAdapter = layout?.recyclerView?.adapter as HappyPlacesAdapter
-                rvAdapter.notifyEditItem(this@MainActivity, position, REQUEST_CODE_ADD_PLACE)
+                rvAdapter.notifyEditItem(this@MainActivity, position)
             }
         }
 

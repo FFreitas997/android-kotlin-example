@@ -1,8 +1,9 @@
 package com.example.happyplaces.activities
 
-import android.Manifest
+import android.Manifest.permission.CAMERA
+import android.app.Dialog
 import android.content.ContentValues
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -10,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
@@ -22,7 +22,6 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -30,13 +29,17 @@ import androidx.lifecycle.lifecycleScope
 import com.example.happyplaces.HappyPlaceApplication
 import com.example.happyplaces.R
 import com.example.happyplaces.data.HappyPlaceModel
-import com.example.happyplaces.data.ImageType
 import com.example.happyplaces.databinding.ActivityCreateHappyPlaceBinding
+import com.example.happyplaces.databinding.CameraDialogBinding
 import com.example.happyplaces.repository.DefaultHappyPlaceRepository
 import com.example.happyplaces.repository.HappyPlacesRepository
 import com.example.happyplaces.utils.Constants
-import com.example.happyplaces.utils.Constants.REQUEST_CODE_CAMERA
 import com.example.happyplaces.utils.HappyPlaceMapper
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.AutocompleteActivity
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -50,14 +53,46 @@ import java.util.concurrent.Executors
 
 class CreateHappyPlaceActivity : AppCompatActivity() {
 
-    private val imagePicker =
+    private val activityResultGallery =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri == null) {
                 Toast.makeText(this, "Error loading image", Toast.LENGTH_SHORT).show()
                 return@registerForActivityResult
             }
             layout?.ivPlaceImage?.setImageURI(uri)
-            layout?.ivPlaceImage?.tag = "${ImageType.GALLERY}€$uri"
+            layout?.ivPlaceImage?.tag = uri
+        }
+
+    private val activityResultPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            if (permissions[CAMERA] == true)
+                startCamera()
+            else
+                Toast
+                    .makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+        }
+
+    private val activityResultPlace =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            when (result.resultCode) {
+                RESULT_OK -> {
+                    val place = Autocomplete.getPlaceFromIntent(result.data!!)
+                    layout?.etLocation?.setText(place.formattedAddress)
+                    layout?.etLocation?.tag =
+                        "${place.location?.latitude}€${place.location?.longitude}"
+                }
+
+                AutocompleteActivity.RESULT_ERROR -> {
+                    val status = Autocomplete.getStatusFromIntent(result.data!!)
+                    Log.e("CreateHappyPlaceActivity", "Error loading location: ${status.statusMessage}")
+                    Toast.makeText(this, "Error loading location", Toast.LENGTH_SHORT).show()
+                }
+
+                RESULT_CANCELED -> {
+                    Log.e("CreateHappyPlaceActivity", "Error loading location: User canceled")
+                    Toast.makeText(this, "Error loading location: User canceled", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
     private var layout: ActivityCreateHappyPlaceBinding? = null
@@ -91,8 +126,12 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
             ?.toolbar
             ?.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
+        if (!Places.isInitialized())
+            Places.initialize(applicationContext, getString(R.string.google_maps_api_key))
+
         val dao = (application as HappyPlaceApplication).db.happyPlaceDao()
         repository = DefaultHappyPlaceRepository(dao)
+        cameraExecutor = Executors.newSingleThreadExecutor()
 
         val constraintsBuilder = CalendarConstraints
             .Builder()
@@ -118,14 +157,18 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         }
 
         layout?.ivPlaceImage?.setOnClickListener {
-            val actions = arrayOf("Select photo form Gallery", "Capture photo from Camera")
+            val actions = arrayOf(
+                getString(R.string.select_photo_form_gallery),
+                getString(R.string.capture_photo_from_camera)
+            )
             AlertDialog.Builder(this)
-                .setTitle("Select Action")
+                .setTitle(getString(R.string.select_action))
                 .setItems(actions) { dialog, which ->
                     dialog.dismiss()
                     when (which) {
-                        0 -> onSelectImageGallery()
-                        1 -> onSelectImageCamera()
+                        0 -> onSelectGallery()
+                        1 -> onSelectCamera()
+                        else -> return@setItems
                     }
                 }
                 .setIcon(android.R.drawable.ic_dialog_info)
@@ -162,41 +205,48 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
             val date = layout?.etDate?.text.toString().trim()
             val location = layout?.etLocation?.text.toString().trim()
 
-            val aux = layout?.ivPlaceImage?.tag.toString().split("€")
+            val uri = layout?.ivPlaceImage?.tag.toString()
+
+            val geoCodes = layout?.etLocation?.tag.toString().split("€")
 
             val image =
-                if (placeID == null)
-                    convertURItoByteArray(aux[1])
-                else {
-                    if (aux[1].isEmpty())
-                        editModel?.image
-                    else
-                        convertURItoByteArray(aux[1])
-                }
-
+                if (uri.isNotEmpty())
+                    convertURItoByteArray(uri)
+                else
+                    editModel?.image ?: byteArrayOf()
 
             val model = HappyPlaceModel(
+                id = placeID,
                 title = title,
                 description = description,
                 date = date,
-                imageType = ImageType.valueOf(aux[0]),
                 location = location,
                 image = image ?: byteArrayOf(),
-                latitude = 0.0,
-                longitude = 0.0
+                latitude = geoCodes[0].toDouble(),
+                longitude = geoCodes[1].toDouble()
             )
 
-            if (placeID != null) {
-                model.id = placeID
+            if (placeID != null)
                 onEditHappyPlace(model)
-                return@setOnClickListener
-            }
-
-            onCreateHappyPlace(model)
+            else
+                onCreateHappyPlace(model)
         }
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
-        layout?.viewFinder?.setOnClickListener { captureCameraPhoto() }
+        layout?.etLocation?.setOnClickListener {
+            try {
+                val fields = listOf(
+                    Place.Field.ID, Place.Field.DISPLAY_NAME,
+                    Place.Field.LOCATION, Place.Field.FORMATTED_ADDRESS
+                )
+                val intent = Autocomplete
+                    .IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                    .build(this)
+                activityResultPlace.launch(intent)
+            } catch (e: Exception) {
+                Log.e("CreateHappyPlaceActivity", "Error loading location place", e)
+                Toast.makeText(this, "Error loading location place", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         val cal = Calendar.getInstance()
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -204,12 +254,12 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         layout?.etDate?.setText(sdf.format(cal.time))
 
         if (intent.hasExtra(Constants.EXTRA_PLACE_EDIT)) {
-            placeID = intent.getIntExtra(Constants.EXTRA_PLACE_EDIT, -1)
-
+            placeID = intent
+                .getIntExtra(Constants.EXTRA_PLACE_EDIT, 0)
             lifecycleScope.launch {
                 repository
-                    .readHappyPlace(placeID ?: throw IllegalArgumentException("Invalid ID"))
-                    .collect { handleHappyPlaceUpdate(HappyPlaceMapper.mapEntityToModel(it)) }
+                    .readHappyPlace(placeID ?: 0)
+                    .collect { handleUpdate(HappyPlaceMapper.mapEntityToModel(it)) }
             }
         }
     }
@@ -228,20 +278,16 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleHappyPlaceUpdate(model: HappyPlaceModel) {
-        supportActionBar?.title = "Edit Happy Place"
+    private fun handleUpdate(model: HappyPlaceModel) {
+        val bitmap = BitmapFactory
+            .decodeByteArray(model.image, 0, model.image.size)
+        supportActionBar?.title = getString(R.string.edit_happy_place)
         layout?.etTitle?.setText(model.title)
         layout?.etDescription?.setText(model.description)
         layout?.etDate?.setText(model.date)
         layout?.etLocation?.setText(model.location)
-        layout?.ivPlaceImage?.setImageBitmap(
-            BitmapFactory.decodeByteArray(
-                model.image,
-                0,
-                model.image.size
-            )
-        )
-        layout?.ivPlaceImage?.tag = "${model.imageType}€"
+        layout?.etLocation?.tag = "${model.latitude}€${model.longitude}"
+        layout?.ivPlaceImage?.setImageBitmap(bitmap)
         layout?.btnSave?.text = getString(R.string.update)
         this.editModel = model
     }
@@ -260,29 +306,44 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         }
     }
 
-    private fun onSelectImageCamera() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            startCamera()
-            return
-        }
-        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            AlertDialog
-                .Builder(this)
-                .setTitle("Permission needed")
-                .setMessage("Camera permission is needed to take a photo")
-                .setCancelable(true)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
-                .create()
-                .show()
-            return
-        }
-        ActivityCompat
-            .requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CODE_CAMERA)
+    private fun startCamera() {
+        val dialogCamera = Dialog(this)
+        dialogCamera.setCancelable(false)
+        dialogCamera.setCanceledOnTouchOutside(false)
+
+        val bindingDialog = CameraDialogBinding
+            .inflate(layoutInflater)
+            .also { dialogCamera.setContentView(it.root) }
+
+        bindingDialog.btnCancel
+            .setOnClickListener { dialogCamera.dismiss() }
+
+        bindingDialog.btnTakePicture
+            .setOnClickListener { dialogCamera.dismiss(); captureCameraPhoto()}
+
+        imageCapture = ImageCapture
+            .Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
+            .build()
+
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview
+                .Builder()
+                .build()
+                .also { it.surfaceProvider = bindingDialog.viewFinder.surfaceProvider }
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(this, cameraSelector, imageCapture, preview)
+                dialogCamera.show()
+            } catch (e: Exception) {
+                Log.e("CreateHappyPlaceActivity", "Error starting camera", e)
+            }
+        }, ContextCompat.getMainExecutor(this))
     }
 
     private fun captureCameraPhoto() {
@@ -317,59 +378,24 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
 
                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                         val uri = outputFileResults.savedUri ?: return
-                        layout?.ivPlaceImage?.visibility = View.VISIBLE
-                        layout?.viewFinder?.visibility = View.GONE
                         layout?.ivPlaceImage?.setImageURI(uri)
-                        layout?.ivPlaceImage?.tag = "${ImageType.CAMERA}€$uri"
+                        layout?.ivPlaceImage?.tag = uri
                     }
 
                     override fun onError(exception: ImageCaptureException) {
-                        layout?.ivPlaceImage?.visibility = View.VISIBLE
-                        layout?.viewFinder?.visibility = View.GONE
                         Log.e("CreateHappyPlaceActivity", "Error taking photo", exception)
                         Toast
-                            .makeText(
-                                this@CreateHappyPlaceActivity,
-                                "Error taking photo",
-                                Toast.LENGTH_SHORT
-                            )
+                            .makeText(this@CreateHappyPlaceActivity, "Error taking photo", Toast.LENGTH_SHORT)
                             .show()
                     }
                 }
             )
     }
 
-    private fun startCamera() {
-        imageCapture = ImageCapture
-            .Builder()
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-            .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
-            .setTargetRotation(layout?.viewFinder?.display?.rotation ?: 0)
-            .build()
-
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            val preview = Preview
-                .Builder()
-                .build()
-                .also { it.surfaceProvider = layout?.viewFinder?.surfaceProvider }
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this, cameraSelector, imageCapture, preview)
-                layout?.ivPlaceImage?.visibility = View.GONE
-                layout?.viewFinder?.visibility = View.VISIBLE
-            } catch (e: Exception) {
-                Log.e("CreateHappyPlaceActivity", "Error starting camera", e)
-            }
-        }, ContextCompat.getMainExecutor(this))
-    }
-
-    private fun onSelectImageGallery() {
+    private fun onSelectGallery() {
         if (!ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(this)) {
-            AlertDialog.Builder(this)
+            AlertDialog
+                .Builder(this)
                 .setTitle("Error loading image")
                 .setMessage("An error occurred while loading the image. Please try again.")
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -378,31 +404,30 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                 .show()
             return
         }
-        imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        activityResultGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            REQUEST_CODE_CAMERA -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startCamera()
-                } else {
-                    AlertDialog.Builder(this)
-                        .setTitle("Permission denied")
-                        .setMessage("Camera permission is needed to take a photo")
-                        .setCancelable(true)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
-                        .create()
-                        .show()
-                }
-            }
+    private fun onSelectCamera() {
+        val cameraPermissionGranted = ContextCompat
+            .checkSelfPermission(this, CAMERA) == PERMISSION_GRANTED
+
+        if (cameraPermissionGranted) {
+            startCamera()
+            return
         }
+        if (shouldShowRequestPermissionRationale(CAMERA)) {
+            AlertDialog
+                .Builder(this)
+                .setTitle("Permission needed")
+                .setMessage("Camera permission is needed to take a photo")
+                .setCancelable(true)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
+                .create()
+                .show()
+            return
+        }
+        activityResultPermissions.launch(arrayOf(CAMERA))
     }
 
     override fun onDestroy() {
