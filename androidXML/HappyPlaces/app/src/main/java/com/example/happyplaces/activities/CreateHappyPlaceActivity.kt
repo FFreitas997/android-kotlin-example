@@ -1,14 +1,19 @@
 package com.example.happyplaces.activities
 
 import android.Manifest.permission.CAMERA
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ContentValues
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Address
+import android.location.Geocoder
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -35,6 +40,12 @@ import com.example.happyplaces.repository.DefaultHappyPlaceRepository
 import com.example.happyplaces.repository.HappyPlacesRepository
 import com.example.happyplaces.utils.Constants
 import com.example.happyplaces.utils.HappyPlaceMapper
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -63,7 +74,21 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
             layout?.ivPlaceImage?.tag = uri
         }
 
-    private val activityResultPermissions =
+    private val activityResultPermissionsLocation =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            var permissionGranted = true
+            permissions.entries.forEach {
+                if (!it.value)
+                    permissionGranted = false
+            }
+            if (permissionGranted)
+                getLocationGPS()
+            else
+                Toast
+                    .makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+        }
+
+    private val activityResultPermissionsCamera =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             if (permissions[CAMERA] == true)
                 startCamera()
@@ -84,13 +109,20 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
 
                 AutocompleteActivity.RESULT_ERROR -> {
                     val status = Autocomplete.getStatusFromIntent(result.data!!)
-                    Log.e("CreateHappyPlaceActivity", "Error loading location: ${status.statusMessage}")
+                    Log.e(
+                        "CreateHappyPlaceActivity",
+                        "Error loading location: ${status.statusMessage}"
+                    )
                     Toast.makeText(this, "Error loading location", Toast.LENGTH_SHORT).show()
                 }
 
                 RESULT_CANCELED -> {
                     Log.e("CreateHappyPlaceActivity", "Error loading location: User canceled")
-                    Toast.makeText(this, "Error loading location: User canceled", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Error loading location: User canceled",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -98,8 +130,9 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
     private var layout: ActivityCreateHappyPlaceBinding? = null
     private var imageCapture: ImageCapture? = null
     private lateinit var datePicker: MaterialDatePicker<Long>
-    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var executor: ExecutorService
     private lateinit var repository: HappyPlacesRepository
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var placeID: Int? = null
     private var editModel: HappyPlaceModel? = null
 
@@ -122,6 +155,9 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         if (supportActionBar != null)
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        fusedLocationClient = LocationServices
+            .getFusedLocationProviderClient(this)
+
         layout
             ?.toolbar
             ?.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
@@ -131,7 +167,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
 
         val dao = (application as HappyPlaceApplication).db.happyPlaceDao()
         repository = DefaultHappyPlaceRepository(dao)
-        cameraExecutor = Executors.newSingleThreadExecutor()
+        executor = Executors.newSingleThreadExecutor()
 
         val constraintsBuilder = CalendarConstraints
             .Builder()
@@ -147,6 +183,15 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
             .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
             .setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
             .build()
+
+        layout?.currentLocationBtn
+            ?.setOnClickListener {
+                if (!isLocationEnabled()) {
+                    Toast.makeText(this, "Location is disabled", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                handleCurrentLocationSelection()
+            }
 
         layout?.etDate?.setOnClickListener {
             datePicker.show(supportFragmentManager, "DATE_PICKER")
@@ -264,6 +309,95 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
         }
     }
 
+    private fun isLocationEnabled(): Boolean {
+        val locationManager: LocationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    private fun handleCurrentLocationSelection() {
+        val permissions = arrayOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        val permissionGranted = permissions.all {
+            ContextCompat.checkSelfPermission(this, it) == PERMISSION_GRANTED
+        }
+        val shouldShowRationale = permissions
+            .any { shouldShowRequestPermissionRationale(it) }
+
+        if (permissionGranted) {
+            getLocationGPS()
+        }
+
+        if (shouldShowRationale) {
+            AlertDialog
+                .Builder(this)
+                .setTitle("Permission needed")
+                .setMessage("Location permission is needed to get current location")
+                .setCancelable(true)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
+                .create()
+                .show()
+            return
+        }
+
+        activityResultPermissionsLocation.launch(permissions)
+    }
+
+    private fun getLocationGPS() {
+        val permissions = arrayOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        val permissionGranted = permissions
+            .all { ContextCompat.checkSelfPermission(this, it) == PERMISSION_GRANTED }
+
+        if (!permissionGranted) {
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val request = LocationRequest
+            .Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+            .setMaxUpdates(1)
+            .build()
+
+        val locationCallback = object : LocationCallback() {
+
+            override fun onLocationResult(result: LocationResult) {
+                val location = result.lastLocation
+                val geoCodes = "${location?.latitude}€${location?.longitude}"
+                layout?.etLocation?.setText(getString(R.string.current_location))
+                layout?.etLocation?.tag = geoCodes
+                getAddressFromGeocodes(location?.latitude!!, location.longitude)
+            }
+        }
+
+        fusedLocationClient
+            .requestLocationUpdates(request, locationCallback, Looper.myLooper())
+    }
+
+    @SuppressLint("NewApi")
+    private fun getAddressFromGeocodes(latitude: Double, longitude: Double) {
+        val geoCoder = Geocoder(this, Locale.getDefault())
+
+        val listener = Geocoder.GeocodeListener { list ->
+            if (list.isEmpty()) {
+                Log.e("CreateHappyPlaceActivity", "Error loading location")
+                return@GeocodeListener
+            }
+            val address = list[0] as Address
+            val location = address.getAddressLine(0)
+            layout?.etLocation?.setText(location)
+        }
+
+        geoCoder
+            .getFromLocation(latitude, longitude, 1, listener)
+    }
+
     private fun onCreateHappyPlace(model: HappyPlaceModel) {
         lifecycleScope.launch {
             repository.createHappyPlace(model)
@@ -319,7 +453,7 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
             .setOnClickListener { dialogCamera.dismiss() }
 
         bindingDialog.btnTakePicture
-            .setOnClickListener { dialogCamera.dismiss(); captureCameraPhoto()}
+            .setOnClickListener { dialogCamera.dismiss(); captureCameraPhoto() }
 
         imageCapture = ImageCapture
             .Builder()
@@ -385,7 +519,11 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                     override fun onError(exception: ImageCaptureException) {
                         Log.e("CreateHappyPlaceActivity", "Error taking photo", exception)
                         Toast
-                            .makeText(this@CreateHappyPlaceActivity, "Error taking photo", Toast.LENGTH_SHORT)
+                            .makeText(
+                                this@CreateHappyPlaceActivity,
+                                "Error taking photo",
+                                Toast.LENGTH_SHORT
+                            )
                             .show()
                     }
                 }
@@ -427,12 +565,12 @@ class CreateHappyPlaceActivity : AppCompatActivity() {
                 .show()
             return
         }
-        activityResultPermissions.launch(arrayOf(CAMERA))
+        activityResultPermissionsCamera.launch(arrayOf(CAMERA))
     }
 
     override fun onDestroy() {
         super.onDestroy()
         layout = null
-        cameraExecutor.shutdown()
+        executor.shutdown()
     }
 }

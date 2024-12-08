@@ -109,6 +109,14 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/current_location_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="@string/select_current_location"
+                android:textStyle="bold"/>
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cv_image"
                 android:layout_width="@dimen/place_image_width"
