@@ -16,21 +16,380 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="?attr/actionBarSize"
-            app:title="@string/app_name"/>
+            app:title="@string/app_name" />
 
     </com.google.android.material.appbar.AppBarLayout>
-    
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/app_name"
-            android:textStyle="bold"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/ll_first_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/layout_normal_margin"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.card.MaterialCardView
+                    style="?attr/materialCardViewElevatedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/layout_normal_margin"
+                    android:layout_weight="1"
+                    android:padding="@dimen/layout_normal_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/iv_main"
+                            android:layout_width="@dimen/dashboard_image_size"
+                            android:layout_height="@dimen/dashboard_image_size"
+                            android:layout_margin="8dp"
+                            android:contentDescription="@string/snowflake_image"
+                            app:srcCompat="@drawable/snowflake" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="8dp"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_main"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_title_text_size"
+                                android:textStyle="bold"
+                                tools:text="Weather" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_main_description"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_value_text_size"
+                                android:textStyle="bold"
+                                tools:text="condition" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    style="?attr/materialCardViewElevatedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/layout_normal_margin"
+                    android:layout_weight="1"
+                    android:padding="@dimen/layout_normal_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/iv_humidity"
+                            android:layout_width="@dimen/dashboard_image_size"
+                            android:layout_height="@dimen/dashboard_image_size"
+                            android:layout_margin="8dp"
+                            android:contentDescription="@string/humidity_image"
+                            app:srcCompat="@drawable/humidity" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="8dp"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_temp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_title_text_size"
+                                android:textStyle="bold"
+                                tools:text="Degree" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_humidity"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_value_text_size"
+                                android:textStyle="bold"
+                                tools:text="per cent" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_second_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/layout_normal_margin"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ll_first_row">
+
+                <com.google.android.material.card.MaterialCardView
+                    style="?attr/materialCardViewElevatedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/layout_normal_margin"
+                    android:layout_weight="1"
+                    android:padding="@dimen/layout_normal_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/iv_min_max"
+                            android:layout_width="@dimen/dashboard_image_size"
+                            android:layout_height="@dimen/dashboard_image_size"
+                            android:layout_margin="8dp"
+                            android:contentDescription="@string/min_max_image"
+                            app:srcCompat="@drawable/temperature" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="8dp"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_min"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_title_text_size"
+                                android:textStyle="bold"
+                                tools:text="Minimum" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_max"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_value_text_size"
+                                android:textStyle="bold"
+                                tools:text="Maximum" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    style="?attr/materialCardViewElevatedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/layout_normal_margin"
+                    android:layout_weight="1"
+                    android:padding="@dimen/layout_normal_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/iv_wind"
+                            android:layout_width="@dimen/dashboard_image_size"
+                            android:layout_height="@dimen/dashboard_image_size"
+                            android:layout_margin="8dp"
+                            android:contentDescription="@string/wind_image"
+                            app:srcCompat="@drawable/wind" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="8dp"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_speed"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_title_text_size"
+                                android:textStyle="bold"
+                                tools:text="Wind" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_speed_unit"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_value_text_size"
+                                android:textStyle="bold"
+                                tools:text="per cent" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/layout_normal_margin"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ll_second_row">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/layout_normal_margin"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/iv_location"
+                            android:layout_width="@dimen/dashboard_image_size"
+                            android:layout_height="@dimen/dashboard_image_size"
+                            android:layout_margin="8dp"
+                            android:contentDescription="@string/location_image"
+                            app:srcCompat="@drawable/location" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="@dimen/layout_normal_margin"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_title_text_size"
+                                android:textStyle="bold"
+                                tools:text="Name" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_country"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:textSize="@dimen/dashboard_value_text_size"
+                                android:textStyle="bold"
+                                tools:text="Country" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/layout_normal_margin" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="@dimen/layout_normal_margin"
+                            android:orientation="vertical">
+
+                            <ImageView
+                                android:id="@+id/iv_sunrise"
+                                android:layout_width="@dimen/dashboard_image_size"
+                                android:layout_height="@dimen/dashboard_image_size"
+                                android:layout_margin="8dp"
+                                android:contentDescription="@string/sunrise_image"
+                                app:srcCompat="@drawable/sunrise" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_sunrise_time"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="8dp"
+                                android:textSize="@dimen/dashboard_value_text_size"
+                                android:textStyle="bold"
+                                tools:text="Sunrise" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="@dimen/layout_normal_margin"
+                            android:orientation="vertical">
+
+                            <ImageView
+                                android:id="@+id/iv_sunset"
+                                android:layout_width="@dimen/dashboard_image_size"
+                                android:layout_height="@dimen/dashboard_image_size"
+                                android:layout_margin="8dp"
+                                android:contentDescription="@string/sunset_image"
+                                app:srcCompat="@drawable/sunset" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_sunset_time"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="8dp"
+                                android:textSize="@dimen/dashboard_value_text_size"
+                                android:textStyle="bold"
+                                tools:text="Sunset" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
 
