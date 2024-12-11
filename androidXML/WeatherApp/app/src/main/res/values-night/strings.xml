@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Weather Application</string>
     <string name="please_enable_location_services_to_use_this_app">Please enable location services to use this app.</string>
     <string name="location_disabled">Location Disabled</string>
 </resources>
