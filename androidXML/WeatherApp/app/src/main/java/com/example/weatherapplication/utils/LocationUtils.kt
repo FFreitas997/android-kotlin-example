@@ -22,7 +22,7 @@ object LocationUtils {
             .setMessage(context.getString(R.string.please_enable_location_services_to_use_this_app))
             .setCancelable(true)
             .setIcon(android.R.drawable.ic_dialog_alert)
-            .setPositiveButton("Go to settings") { dialog, _ ->
+            .setPositiveButton(context.getString(R.string.go_to_settings)) { dialog, _ ->
                 dialog.dismiss()
                 Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     .apply { context.startActivity(this) }

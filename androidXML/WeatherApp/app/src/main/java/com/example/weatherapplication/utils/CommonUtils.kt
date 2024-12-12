@@ -18,8 +18,8 @@ object CommonUtils {
 
     fun unixTime(timex: Long): String? {
         val date = Date(timex * 1000L)
-        @SuppressLint("SimpleDateFormat") val sdf =
-            SimpleDateFormat("HH:mm:ss")
+        @SuppressLint("SimpleDateFormat")
+        val sdf = SimpleDateFormat("HH:mm")
         sdf.timeZone = TimeZone.getDefault()
         return sdf.format(date)
     }

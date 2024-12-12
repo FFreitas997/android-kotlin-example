@@ -13,7 +13,6 @@ class RetrofitClient(private val retrofit: Retrofit) {
     fun getWeatherService(): NetworkWeatherService =
         retrofit.create(NetworkWeatherService::class.java)
 
-
     companion object {
 
         private var retrofit: Retrofit? = null
@@ -26,7 +25,6 @@ class RetrofitClient(private val retrofit: Retrofit) {
             val loggingInterceptor = HttpLoggingInterceptor()
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
 
-            // Create OkHttpClient with interceptor
             val client = OkHttpClient.Builder()
                 .addInterceptor(loggingInterceptor)
                 .build()

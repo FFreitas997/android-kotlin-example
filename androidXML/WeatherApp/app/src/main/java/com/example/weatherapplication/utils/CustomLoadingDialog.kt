@@ -8,13 +8,13 @@ class CustomLoadingDialog(private val context: Context) {
 
     private var dialog: Dialog? = null
 
-    fun builder(): CustomLoadingDialog {
-        if (dialog != null) return this
+    init { builder() }
+
+    private fun builder() {
         dialog = Dialog(context)
         dialog?.setContentView(R.layout.custom_progress_dialog)
         dialog?.setCancelable(false)
         dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        return this
     }
 
     fun dismiss() { (dialog ?: return).dismiss() }

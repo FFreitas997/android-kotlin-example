@@ -2,10 +2,8 @@ package com.example.weatherapplication.ui.main
 
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.Manifest.permission.ACCESS_NETWORK_STATE
-import android.Manifest.permission.ACCESS_WIFI_STATE
-import android.Manifest.permission.INTERNET
 import android.annotation.SuppressLint
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -23,6 +21,8 @@ import com.example.weatherapplication.data.repository.WeatherRepository
 import com.example.weatherapplication.databinding.ActivityMainBinding
 import com.example.weatherapplication.utils.CommonUtils.getUnit
 import com.example.weatherapplication.utils.CommonUtils.unixTime
+import com.example.weatherapplication.utils.Constants
+import com.example.weatherapplication.utils.Constants.PREFERENCE_NAME
 import com.example.weatherapplication.utils.CustomLoadingDialog
 import com.example.weatherapplication.utils.LocationUtils
 import com.example.weatherapplication.utils.NetworkUtils
@@ -34,6 +34,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var repository: WeatherRepository
     private lateinit var loadingDialog: CustomLoadingDialog
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,14 +64,32 @@ class MainActivity : AppCompatActivity() {
             .getFusedLocationProviderClient(this)
 
         loadingDialog = CustomLoadingDialog(this)
-            .builder()
+
+        sharedPreferences = getSharedPreferences(PREFERENCE_NAME, MODE_PRIVATE)
+        updateUI()
 
         val app = application as WeatherApplication
         repository = DefaultWeatherRepository(app.retrofitClient.getWeatherService())
 
+        layout?.toolbar?.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.action_refresh -> {
+                    requestLocationData()
+                    true
+                }
+
+                else -> false
+            }
+        }
+
         PermissionHelper(this)
             .setOnSuccessListener { requestLocationData() }
             .apply { requestPermission(PERMISSIONS) }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        layout = null
     }
 
     @SuppressLint("MissingPermission")
@@ -79,6 +99,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        loadingDialog.show()
+
         val request = LocationRequest
             .Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
             .setMaxUpdates(1)
@@ -87,7 +109,12 @@ class MainActivity : AppCompatActivity() {
         val locationCallback = object : LocationCallback() {
 
             override fun onLocationResult(result: LocationResult) {
-                val location = result.lastLocation ?: return
+                loadingDialog.dismiss()
+                val location = result.lastLocation
+                if (location == null) {
+                    notifyUser("Unable to get location data")
+                    return
+                }
                 requestWeatherData(location.latitude, location.longitude)
             }
         }
@@ -98,74 +125,89 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestWeatherData(lat: Double, lon: Double) {
         if (!NetworkUtils.hasNetworkConnection(this)) {
-            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            notifyUser("No internet connection")
             return
         }
+
         loadingDialog.show()
+
         lifecycleScope.launch {
             try {
-                loadingDialog.dismiss()
                 val response = repository.getWeatherData(lat, lon)
-                handleResponseFromApi(response)
+                loadingDialog.dismiss()
+                val encoded = Json.encodeToString(WeatherResponse.serializer(), response)
+                val editor = sharedPreferences.edit()
+                editor.putString(Constants.WEATHER_RESPONSE_DATA, encoded).apply()
+                updateUI()
             } catch (e: Exception) {
                 loadingDialog.dismiss()
                 Log.e(TAG, e.message.toString())
-                Toast.makeText(
-                    this@MainActivity,
-                    getString(R.string.something_went_wrong),
-                    Toast.LENGTH_SHORT
-                ).show()
+                notifyUser("An error occurred: ${e.message}")
             }
         }
     }
 
-    private fun handleResponseFromApi(response: WeatherResponse) {
-        layout?.let { layout ->
-            for (i in response.weather.indices) {
-                val weather = response.weather[i]
-                layout.tvMain.text = weather.main
-                layout.tvMainDescription.text = weather.description
-                layout.tvTemp.text = String.format(Locale.getDefault(), response.main.temp.toString() + getUnit(response.sys.country))
-                layout.tvHumidity.text = String.format(Locale.getDefault(), response.main.humidity.toString() + " per cent")
-                layout.tvMin.text = String.format(Locale.getDefault(), response.main.tempMin.toString() + " min")
-                layout.tvMax.text = String.format(Locale.getDefault(), response.main.tempMax.toString() + " max")
-                layout.tvSpeed.text = String.format(Locale.getDefault(), response.wind.speed.toString())
-                layout.tvName.text = response.name
-                layout.tvCountry.text = response.sys.country
-                layout.tvSunriseTime.text = unixTime(response.sys.sunrise.toLong())
-                layout.tvSunsetTime.text = unixTime(response.sys.sunset.toLong())
+    private fun updateUI() {
+        val weatherString = sharedPreferences.getString(Constants.WEATHER_RESPONSE_DATA, "")
+        if (!weatherString.isNullOrEmpty()) {
+            val response = Json.decodeFromString(WeatherResponse.serializer(), weatherString)
+            layout?.let { layout ->
+                for (i in response.weather.indices) {
+                    val weather = response.weather[i]
+                    layout.tvMain.text = weather.main
+                    layout.tvMainDescription.text = weather.description
+                    layout.tvTemp.text = String.format(
+                        Locale.getDefault(),
+                        response.main.temp.toString() + getUnit(response.sys.country)
+                    )
+                    layout.tvHumidity.text = String.format(
+                        Locale.getDefault(),
+                        response.main.humidity.toString() + " per cent"
+                    )
+                    layout.tvMin.text = String.format(
+                        Locale.getDefault(),
+                        response.main.tempMin.toString() + " min"
+                    )
+                    layout.tvMax.text = String.format(
+                        Locale.getDefault(),
+                        response.main.tempMax.toString() + " max"
+                    )
+                    layout.tvSpeed.text =
+                        String.format(Locale.getDefault(), response.wind.speed.toString())
+                    layout.tvName.text = response.name
+                    layout.tvCountry.text = response.sys.country
+                    layout.tvSunriseTime.text = unixTime(response.sys.sunrise.toLong())
+                    layout.tvSunsetTime.text = unixTime(response.sys.sunset.toLong())
 
-                // Here we update the main icon
-                when (weather.icon) {
-                    "01d" -> layout.ivMain.setImageResource(R.drawable.sunny)
-                    "02d" -> layout.ivMain.setImageResource(R.drawable.cloud)
-                    "03d" -> layout.ivMain.setImageResource(R.drawable.cloud)
-                    "04d" -> layout.ivMain.setImageResource(R.drawable.cloud)
-                    "04n" -> layout.ivMain.setImageResource(R.drawable.cloud)
-                    "10d" -> layout.ivMain.setImageResource(R.drawable.rain)
-                    "11d" -> layout.ivMain.setImageResource(R.drawable.storm)
-                    "13d" -> layout.ivMain.setImageResource(R.drawable.snowflake)
-                    "01n" -> layout.ivMain.setImageResource(R.drawable.cloud)
-                    "02n" -> layout.ivMain.setImageResource(R.drawable.cloud)
-                    "03n" -> layout.ivMain.setImageResource(R.drawable.cloud)
-                    "10n" -> layout.ivMain.setImageResource(R.drawable.cloud)
-                    "11n" -> layout.ivMain.setImageResource(R.drawable.rain)
-                    "13n" -> layout.ivMain.setImageResource(R.drawable.snowflake)
+                    // Here we update the main icon
+                    when (weather.icon) {
+                        "01d" -> layout.ivMain.setImageResource(R.drawable.sunny)
+                        "02d" -> layout.ivMain.setImageResource(R.drawable.cloud)
+                        "03d" -> layout.ivMain.setImageResource(R.drawable.cloud)
+                        "04d" -> layout.ivMain.setImageResource(R.drawable.cloud)
+                        "04n" -> layout.ivMain.setImageResource(R.drawable.cloud)
+                        "10d" -> layout.ivMain.setImageResource(R.drawable.rain)
+                        "11d" -> layout.ivMain.setImageResource(R.drawable.storm)
+                        "13d" -> layout.ivMain.setImageResource(R.drawable.snowflake)
+                        "01n" -> layout.ivMain.setImageResource(R.drawable.cloud)
+                        "02n" -> layout.ivMain.setImageResource(R.drawable.cloud)
+                        "03n" -> layout.ivMain.setImageResource(R.drawable.cloud)
+                        "10n" -> layout.ivMain.setImageResource(R.drawable.cloud)
+                        "11n" -> layout.ivMain.setImageResource(R.drawable.rain)
+                        "13n" -> layout.ivMain.setImageResource(R.drawable.snowflake)
+                    }
                 }
             }
         }
     }
 
+    private fun notifyUser(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
 
     companion object {
         private const val TAG = "MainActivity"
-        private val PERMISSIONS =
-            arrayOf(
-                ACCESS_FINE_LOCATION,
-                ACCESS_COARSE_LOCATION,
-                INTERNET,
-                ACCESS_NETWORK_STATE,
-                ACCESS_WIFI_STATE
-            )
+        private val PERMISSIONS = arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION)
     }
 }
