@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="intro_screen_description_text">Colabore e planeje em conjunto em vários dispositivos na interface minimalista do Flowify</string>
+    <string name="intro_screen_subtitle_size">Vamos começar</string>
+    <string name="sign_up">Inscreve-se</string>
+    <string name="sign_in">Entrar</string>
+    <string name="signup_screen_password_hint">Por favor digite sua senha</string>
+    <string name="signup_screen_email_hint">Por favor insira seu e-mail</string>
+    <string name="signup_screen_name_hint">Por favor digite seu nome</string>
+</resources>

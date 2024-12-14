@@ -1,7 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Flowify</string>
-    <string name="splash_screen_icon" translatable="false">splash screen icon</string>
-    <string name="board_image" translatable="false">board image</string>
     <string name="intro_screen_description_text">Collaborate and Plan Together Across Multiple Devices on Flowify\'s Minimalistic Interface</string>
     <string name="intro_screen_subtitle_size">Let\'s Get Started</string>
     <string name="sign_up">Sign Up</string>

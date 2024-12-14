@@ -2,4 +2,11 @@
 <resources>
     <dimen name="splash_icon_size">150dp</dimen>
     <dimen name="regular_margin">16dp</dimen>
+    <dimen name="intro_screen_title_text_size">40sp</dimen>
+    <dimen name="intro_screen_image_size">250dp</dimen>
+    <dimen name="intro_screen_line_spacing">8dp</dimen>
+    <dimen name="intro_screen_subtitle_1_size">16sp</dimen>
+    <dimen name="intro_screen_subtitle_size">32sp</dimen>
+    <dimen name="small_margin">8dp</dimen>
+    <dimen name="regular_padding">16dp</dimen>
 </resources>

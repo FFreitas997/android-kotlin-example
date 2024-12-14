@@ -1,5 +1,9 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="100dp" android:viewportHeight="48" android:viewportWidth="48" android:width="100dp">
-
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="100dp"
+    android:viewportHeight="48"
+    android:viewportWidth="48"
+    android:width="100dp"
+    >
     <group android:name="animationGroup" android:pivotX="24" android:pivotY="24">
 
         <path android:fillColor="#007AC2" android:fillType="evenOdd" android:pathData="M6,9L6,36C6,37.657 7.342,39 9,39L18,39C19.658,39 21,37.657 21,36L21,9C21,7.343 19.658,6 18,6L9,6C7.342,6 6,7.343 6,9L6,9ZM27,9L27,24C27,25.657 28.342,27 30,27L39,27C40.658,27 42,25.657 42,24L42,9C42,7.343 40.658,6 39,6L30,6C28.342,6 27,7.343 27,9L27,9ZM6,0C2.686,0 0,2.688 0,6L0,42C0,45.313 2.688,48 6,48L42,48C45.314,48 48,45.312 48,42L48,6C48,2.687 45.312,0 42,0L6,0Z" android:strokeColor="#00000000" android:strokeWidth="1"/>
