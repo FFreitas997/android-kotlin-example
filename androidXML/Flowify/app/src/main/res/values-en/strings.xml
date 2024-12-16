@@ -7,4 +7,15 @@
     <string name="signup_screen_password_hint">Please enter your password</string>
     <string name="signup_screen_email_hint">Please enter your email</string>
     <string name="signup_screen_name_hint">Please enter your name</string>
+    <string name="signup_screen_title">Enter your name, email ID and password to register with us</string>
+    <string name="signup_screen_name_invalid">Username is mandatory</string>
+    <string name="signup_screen_email_invalid">The user email is mandatory and must be valid</string>
+    <string name="signup_screen_password_invalid">The password is mandatory and must have at least 6 characters.</string>
+    <string name="signup_screen_submit_error">Something went wrong with your sign in, please try again</string>
+    <string name="loading">Please wait …</string>
+    <string name="signin_screen_submit_error">Something went wrong with your sign in, please try again</string>
+    <string name="signin_screen_email_hint">Please enter your email</string>
+    <string name="signin_screen_password_hint">Please enter your password</string>
+    <string name="signin_screen_email_invalid">The user email is mandatory and must be valid</string>
+    <string name="signin_screen_password_invalid">The password is mandatory and must have at least 6 characters.</string>
 </resources>

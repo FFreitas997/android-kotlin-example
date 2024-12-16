@@ -41,8 +41,8 @@ class BackPressedCallback(private val context: Activity, enabled: Boolean) : OnB
     override fun onClick(view: View) {
         when (view.id) {
             R.id.tv_yes -> {
-                dialog.dismiss()
                 isEnabled = false
+                dialog.dismiss()
                 context.finish()
             }
 

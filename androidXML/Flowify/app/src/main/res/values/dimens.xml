@@ -9,4 +9,7 @@
     <dimen name="intro_screen_subtitle_size">32sp</dimen>
     <dimen name="small_margin">8dp</dimen>
     <dimen name="regular_padding">16dp</dimen>
+    <dimen name="signup_screen_title_size">16sp</dimen>
+    <dimen name="progress_bar_size">40sp</dimen>
+    <dimen name="progress_bar_text_size">16sp</dimen>
 </resources>

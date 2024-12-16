@@ -1,39 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
 
-    <data>
-        <variable
-            name="viewModel"
-            type="com.ffreitas.flowify.ui.signup.SignUpViewModel" />
-    </data>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.signup.SignUpActivity">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/main"
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            app:title="@string/sign_up" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.signup.SignUpActivity">
-
-        <com.google.android.material.appbar.AppBarLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="?attr/actionBarSize"
-                app:title="@string/sign_up" />
-
-        </com.google.android.material.appbar.AppBarLayout>
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:layout_height="match_parent">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/regular_margin"
+                android:gravity="center_horizontal"
+                android:text="@string/signup_screen_title"
+                android:textSize="@dimen/signup_screen_title_size"
+                app:layout_constraintBottom_toTopOf="@id/cardView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardView"
                 style="?attr/materialCardViewElevatedStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -58,10 +69,11 @@
                         app:endIconMode="clear_text">
 
                         <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="text"
-                            android:text="@{viewModel.state.name}" />
+                            android:text="@{viewModel.uiState.name}" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -72,10 +84,11 @@
                         android:hint="@string/signup_screen_email_hint">
 
                         <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_email"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textEmailAddress"
-                            android:text="@{viewModel.state.email}" />
+                            android:text="@{viewModel.uiState.email}" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -87,20 +100,21 @@
                         app:endIconMode="password_toggle">
 
                         <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_password"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPassword"
-                            android:text="@{viewModel.state.password}" />
+                            android:text="@{viewModel.uiState.password}" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_sign_up"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/regular_margin"
-                        android:onClick="@{() -> viewModel.onClickSignUp()}"
                         android:text="@string/sign_up"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -108,6 +122,6 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.core.widget.NestedScrollView>
 
-</layout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

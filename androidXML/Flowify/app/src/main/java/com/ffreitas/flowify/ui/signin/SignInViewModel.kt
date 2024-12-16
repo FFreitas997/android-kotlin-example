@@ -1,6 +1,7 @@
-package com.ffreitas.flowify.ui.signup
+package com.ffreitas.flowify.ui.signin
 
 import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,19 +14,14 @@ import com.ffreitas.flowify.data.repository.AuthRepository
 import com.ffreitas.flowify.data.repository.DefaultAuthRepository
 import kotlinx.coroutines.launch
 
+class SignInViewModel(private val repository: AuthRepository) : ViewModel() {
 
-class SignUpViewModel(private val repository: AuthRepository) : ViewModel() {
-
-    private var name = ""
     private var email = ""
     private var password = ""
 
-    private val _hasSignSuccess: MutableLiveData<Boolean> = MutableLiveData()
-    val hasSignSuccess: LiveData<Boolean> = _hasSignSuccess
+    private val _hasSignInSuccess: MutableLiveData<Boolean> = MutableLiveData()
+    val hasSignInSuccess: LiveData<Boolean> = _hasSignInSuccess
 
-    fun onNameChanged(name: String) {
-        this.name = name
-    }
 
     fun onEmailChanged(email: String) {
         this.email = email
@@ -35,32 +31,28 @@ class SignUpViewModel(private val repository: AuthRepository) : ViewModel() {
         this.password = password
     }
 
-    fun nameIsValid(): Boolean {
-        return name.isNotEmpty()
-    }
-
     fun emailIsValid(): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
     fun passwordIsValid(): Boolean {
         return password.length >= 6
     }
 
-    fun onSignUp() {
+    fun signIn() {
         viewModelScope.launch {
             try {
-                val success = repository.signUp(name, email, password)
-                _hasSignSuccess.postValue(success)
+                val success = repository.signIn(email, password)
+                _hasSignInSuccess.postValue(success)
             } catch (e: Exception) {
-                Log.e(TAG, "Error signing up", e)
-                _hasSignSuccess.postValue(false)
+                Log.e(TAG, "Error signing in", e)
+                _hasSignInSuccess.postValue(false)
             }
         }
     }
 
     companion object {
-        private const val TAG = "SignUpViewModel"
+        private const val TAG = "SignInViewModel"
 
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
 
@@ -69,10 +61,9 @@ class SignUpViewModel(private val repository: AuthRepository) : ViewModel() {
 
                 val application = checkNotNull(extras[APPLICATION_KEY])
 
-                val repository =
-                    DefaultAuthRepository((application as FlowifyApplication).firebase)
+                val repository = DefaultAuthRepository((application as FlowifyApplication).firebase)
 
-                return SignUpViewModel(repository) as T
+                return SignInViewModel(repository) as T
             }
         }
     }
