@@ -6,14 +6,14 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.tasks.await
 
-class DefaultFirebaseAuthService(private val instance: FirebaseAuth) : FirebaseAuthService {
+class DefaultFirebaseAuthService(private val service: FirebaseAuth) : FirebaseAuthService {
 
     override suspend fun signUp(
         name: String,
         email: String,
         password: String
     ): FirebaseUser? {
-        val result = instance
+        val result = service
             .createUserWithEmailAndPassword(email, password)
             .await()
 
@@ -32,7 +32,7 @@ class DefaultFirebaseAuthService(private val instance: FirebaseAuth) : FirebaseA
     }
 
     override suspend fun signIn(email: String, password: String): FirebaseUser? {
-        val result = instance
+        val result = service
             .signInWithEmailAndPassword(email, password)
             .await()
 
@@ -44,18 +44,12 @@ class DefaultFirebaseAuthService(private val instance: FirebaseAuth) : FirebaseA
         return result.user
     }
 
-    override fun signOut() = instance.signOut()
+    override fun signOut() = service.signOut()
 
-    override fun getCurrentUser(): FirebaseUser? = instance.currentUser
+    override fun getCurrentUser(): FirebaseUser? = service.currentUser
 
     companion object {
         private const val TAG = "DefaultFirebaseAuthService"
-        private var instance: FirebaseAuth? = null
 
-        fun create(): DefaultFirebaseAuthService {
-            val instance = this.instance ?: FirebaseAuth.getInstance()
-            return DefaultFirebaseAuthService(instance)
-        }
     }
-
 }

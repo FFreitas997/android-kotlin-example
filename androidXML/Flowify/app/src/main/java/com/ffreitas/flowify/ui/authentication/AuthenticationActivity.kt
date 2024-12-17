@@ -19,15 +19,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.databinding.ActivityAuthenticationBinding
+import com.ffreitas.flowify.ui.home.HomeActivity
 import com.ffreitas.flowify.ui.signin.SignInActivity
 import com.ffreitas.flowify.ui.signup.SignUpActivity
 import com.ffreitas.flowify.utils.Constants.SPLASH_SCREEN_DELAY
+import com.ffreitas.flowify.utils.ProgressDialog
 
 class AuthenticationActivity : AppCompatActivity(), OnClickListener {
 
     private var layout: ActivityAuthenticationBinding? = null
+    private lateinit var progressDialog: ProgressDialog
     private var keepSplashOnScreen = true
-    private val viewModel by viewModels<AuthenticationViewModel> { AuthenticationViewModel.Factory }
+    private val model by viewModels<AuthenticationViewModel> { AuthenticationViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +48,10 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
                         )
                         interpolator = OvershootInterpolator()
                         duration = 500L
-                        doOnEnd { screen.remove() }
+                        doOnEnd {
+                            screen.remove()
+                            handleAfterSplashScreen()
+                        }
                     }
                     scaleDown.start()
                 }
@@ -57,6 +63,8 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
         layout = ActivityAuthenticationBinding.inflate(layoutInflater)
             .also { setContentView(it.root) }
 
+        progressDialog = ProgressDialog(this)
+
         ViewCompat.setOnApplyWindowInsetsListener(layout?.root!!) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -65,16 +73,20 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
 
         layout?.btnSignIn?.setOnClickListener(this)
         layout?.btnSignUp?.setOnClickListener(this)
+        model.hasUser.observe(this) { user ->
+            progressDialog.dismiss()
+            if (user == null) return@observe
+            Log.d(TAG, "User found: ${user.email}")
+            Intent(this, HomeActivity::class.java)
+                .also { startActivity(it) }
+        }
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "onResume")
-        if (viewModel.hasCurrentUser() != null) {
-            /*            Intent(this, SignInActivity::class.java)
-                            .also { startActivity(it) }
-                        finish()*/
-        }
+    private fun handleAfterSplashScreen() {
+        val hasUser = model.hasCurrentUser() ?: return
+        Log.d(TAG, "User is already signed in")
+        model.getUser(hasUser.email ?: return)
+        progressDialog.show()
     }
 
     private fun handleSignIn() {

@@ -1,8 +1,8 @@
-package com.ffreitas.flowify.data.network.firestore
+package com.ffreitas.flowify.data.repository.user
 
 import com.ffreitas.flowify.data.network.models.User
 
-interface FirestoreService {
+interface UserRepository {
 
     suspend fun storeUser(user: User): Boolean
 

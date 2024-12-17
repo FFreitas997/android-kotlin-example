@@ -1,5 +1,6 @@
 package com.ffreitas.flowify.ui.signin
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -14,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.databinding.ActivitySignInBinding
+import com.ffreitas.flowify.ui.home.HomeActivity
 import com.ffreitas.flowify.utils.BackPressedCallback
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.firebase.Firebase
@@ -77,8 +79,10 @@ class SignInActivity : AppCompatActivity(), OnClickListener {
             firebaseAnalytics
                 .logEvent(FirebaseAnalytics.Event.LOGIN) {
                     param(FirebaseAnalytics.Param.METHOD, "email")
-                    param(FirebaseAnalytics.Param.CONTENT, "user: ${user.uid}")
+                    param(FirebaseAnalytics.Param.CONTENT, "user: ${user.id}")
                 }
+            Intent(this, HomeActivity::class.java)
+                .also { startActivity(it) }
             finish()
         }
     }

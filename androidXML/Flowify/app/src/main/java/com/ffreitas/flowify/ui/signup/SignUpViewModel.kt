@@ -9,20 +9,25 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.ffreitas.flowify.FlowifyApplication
+import com.ffreitas.flowify.data.network.models.User
 import com.ffreitas.flowify.data.repository.auth.AuthRepository
 import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
-import com.google.firebase.auth.FirebaseUser
+import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
+import com.ffreitas.flowify.data.repository.user.UserRepository
 import kotlinx.coroutines.launch
 
 
-class SignUpViewModel(private val repository: AuthRepository) : ViewModel() {
+class SignUpViewModel(
+    private val authRepository: AuthRepository,
+    private val storeRepository: UserRepository
+) : ViewModel() {
 
     private var name = ""
     private var email = ""
     private var password = ""
 
-    private val _hasSignSuccess: MutableLiveData<FirebaseUser?> = MutableLiveData()
-    val hasSignSuccess: LiveData<FirebaseUser?> = _hasSignSuccess
+    private val _hasSignSuccess: MutableLiveData<User?> = MutableLiveData()
+    val hasSignSuccess: LiveData<User?> = _hasSignSuccess
 
     fun onNameChanged(name: String) {
         this.name = name
@@ -51,8 +56,20 @@ class SignUpViewModel(private val repository: AuthRepository) : ViewModel() {
     fun onSignUp() {
         viewModelScope.launch {
             try {
-                val result = repository.signUp(name, email, password)
-                _hasSignSuccess.postValue(result)
+                val result = authRepository.signUp(name, email, password)
+                    ?: throw Exception("Failed to sign up")
+
+                val user = User(
+                    id = result.uid,
+                    name = result.displayName ?: "",
+                    email = result.email ?: ""
+                )
+
+                val storeSuccess = storeRepository.storeUser(user)
+                if (!storeSuccess)
+                    throw Exception("Failed to store user")
+
+                _hasSignSuccess.postValue(user)
             } catch (e: Exception) {
                 Log.e(TAG, "Error signing up", e)
                 _hasSignSuccess.postValue(null)
@@ -67,13 +84,11 @@ class SignUpViewModel(private val repository: AuthRepository) : ViewModel() {
 
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+                val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
+                val authRepository = DefaultAuthRepository(application.authFirebase)
+                val storeRepository = DefaultUserRepository(application.firestore)
 
-                val application = checkNotNull(extras[APPLICATION_KEY])
-
-                val repository =
-                    DefaultAuthRepository((application as FlowifyApplication).firebase)
-
-                return SignUpViewModel(repository) as T
+                return SignUpViewModel(authRepository, storeRepository) as T
             }
         }
     }

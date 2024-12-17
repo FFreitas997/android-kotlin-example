@@ -10,18 +10,23 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.ffreitas.flowify.FlowifyApplication
+import com.ffreitas.flowify.data.network.models.User
 import com.ffreitas.flowify.data.repository.auth.AuthRepository
 import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
-import com.google.firebase.auth.FirebaseUser
+import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
+import com.ffreitas.flowify.data.repository.user.UserRepository
 import kotlinx.coroutines.launch
 
-class SignInViewModel(private val repository: AuthRepository) : ViewModel() {
+class SignInViewModel(
+    private val authRepository: AuthRepository,
+    private val storeRepository: UserRepository
+) : ViewModel() {
 
     private var email = ""
     private var password = ""
 
-    private val _hasSignInSuccess: MutableLiveData<FirebaseUser?> = MutableLiveData()
-    val hasSignInSuccess: LiveData<FirebaseUser?> = _hasSignInSuccess
+    private val _hasSignInSuccess: MutableLiveData<User?> = MutableLiveData()
+    val hasSignInSuccess: LiveData<User?> = _hasSignInSuccess
 
 
     fun onEmailChanged(email: String) {
@@ -43,7 +48,12 @@ class SignInViewModel(private val repository: AuthRepository) : ViewModel() {
     fun signIn() {
         viewModelScope.launch {
             try {
-                val user = repository.signIn(email, password)
+                val firebaseUser = authRepository.signIn(email, password)
+                    ?: throw IllegalStateException("Failed to sign in")
+
+                val user = storeRepository.getUser(firebaseUser.email ?: "")
+                checkNotNull(user) { "Failed to get user" }
+
                 _hasSignInSuccess.postValue(user)
             } catch (e: Exception) {
                 Log.e(TAG, "Error signing in", e)
@@ -59,12 +69,11 @@ class SignInViewModel(private val repository: AuthRepository) : ViewModel() {
 
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+                val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
+                val authRepository = DefaultAuthRepository(application.authFirebase)
+                val storeRepository = DefaultUserRepository(application.firestore)
 
-                val application = checkNotNull(extras[APPLICATION_KEY])
-
-                val repository = DefaultAuthRepository((application as FlowifyApplication).firebase)
-
-                return SignInViewModel(repository) as T
+                return SignInViewModel(authRepository, storeRepository) as T
             }
         }
     }

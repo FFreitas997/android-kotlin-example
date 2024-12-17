@@ -1,4 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+
     <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
@@ -53,4 +54,13 @@
         <item name="postSplashScreenTheme">@style/AppTheme</item>
         <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
     </style>
+
+    <style name="Theme.App.SplashScreen.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.App.SplashScreen.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.App.SplashScreen.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>
