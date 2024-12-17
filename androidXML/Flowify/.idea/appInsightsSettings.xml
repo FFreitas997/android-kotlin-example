@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.ffreitas.flowify" />
+                  <option name="mobileSdkAppId" value="1:103473899599:android:0e34137bdc699201bfe23a" />
+                  <option name="projectId" value="flowify-d6109" />
+                  <option name="projectNumber" value="103473899599" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

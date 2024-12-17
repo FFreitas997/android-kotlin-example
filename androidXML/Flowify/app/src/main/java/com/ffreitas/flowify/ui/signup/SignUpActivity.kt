@@ -1,6 +1,7 @@
 package com.ffreitas.flowify.ui.signup
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Toast
@@ -15,11 +16,16 @@ import com.ffreitas.flowify.R
 import com.ffreitas.flowify.databinding.ActivitySignUpBinding
 import com.ffreitas.flowify.utils.BackPressedCallback
 import com.ffreitas.flowify.utils.ProgressDialog
+import com.google.firebase.Firebase
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.analytics
+import com.google.firebase.analytics.logEvent
 
 class SignUpActivity : AppCompatActivity(), OnClickListener {
 
     private var layout: ActivitySignUpBinding? = null
     private lateinit var progressDialog: ProgressDialog
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
     private val model: SignUpViewModel by viewModels { SignUpViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +36,8 @@ class SignUpActivity : AppCompatActivity(), OnClickListener {
         layout = ActivitySignUpBinding
             .inflate(layoutInflater)
             .also { setContentView(it.root) }
+
+        firebaseAnalytics = Firebase.analytics
 
         ViewCompat.setOnApplyWindowInsetsListener(layout!!.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -66,14 +74,24 @@ class SignUpActivity : AppCompatActivity(), OnClickListener {
 
         layout!!.buttonSignUp.setOnClickListener(this)
 
-        model.hasSignSuccess.observe(this) { success ->
+        model.hasSignSuccess.observe(this) { user ->
             progressDialog.dismiss()
-            if (success) onBackPressedDispatcher.onBackPressed()
+            if (user == null) {
+                handleErrorMessage(R.string.signup_screen_submit_error)
+                return@observe
+            }
+            Log.d(TAG, "Sign Up Success")
+            firebaseAnalytics
+                .logEvent(FirebaseAnalytics.Event.SIGN_UP) {
+                    param(FirebaseAnalytics.Param.METHOD, "email")
+                    param(FirebaseAnalytics.Param.CONTENT, "user: ${user.uid}")
+                }
+            finish()
         }
     }
 
     private fun handleNameChanged(name: String) {
-        model.onNameChanged(name)
+        model.onNameChanged(name.trim())
 
         layout!!.inputName.error =
             if (model.nameIsValid())
@@ -83,7 +101,7 @@ class SignUpActivity : AppCompatActivity(), OnClickListener {
     }
 
     private fun handleEmailChanged(email: String) {
-        model.onEmailChanged(email)
+        model.onEmailChanged(email.trim())
 
         layout!!.inputEmail.error =
             if (model.emailIsValid())
@@ -93,7 +111,7 @@ class SignUpActivity : AppCompatActivity(), OnClickListener {
     }
 
     private fun handlePasswordChanged(password: String) {
-        model.onPasswordChanged(password)
+        model.onPasswordChanged(password.trim())
 
         layout!!.inputPassword.error =
             if (model.passwordIsValid())
@@ -122,5 +140,9 @@ class SignUpActivity : AppCompatActivity(), OnClickListener {
     override fun onDestroy() {
         super.onDestroy()
         layout = null
+    }
+
+    companion object {
+        private const val TAG = "SignUpActivity"
     }
 }

@@ -9,8 +9,9 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.ffreitas.flowify.FlowifyApplication
-import com.ffreitas.flowify.data.repository.AuthRepository
-import com.ffreitas.flowify.data.repository.DefaultAuthRepository
+import com.ffreitas.flowify.data.repository.auth.AuthRepository
+import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 
 
@@ -20,8 +21,8 @@ class SignUpViewModel(private val repository: AuthRepository) : ViewModel() {
     private var email = ""
     private var password = ""
 
-    private val _hasSignSuccess: MutableLiveData<Boolean> = MutableLiveData()
-    val hasSignSuccess: LiveData<Boolean> = _hasSignSuccess
+    private val _hasSignSuccess: MutableLiveData<FirebaseUser?> = MutableLiveData()
+    val hasSignSuccess: LiveData<FirebaseUser?> = _hasSignSuccess
 
     fun onNameChanged(name: String) {
         this.name = name
@@ -50,11 +51,11 @@ class SignUpViewModel(private val repository: AuthRepository) : ViewModel() {
     fun onSignUp() {
         viewModelScope.launch {
             try {
-                val success = repository.signUp(name, email, password)
-                _hasSignSuccess.postValue(success)
+                val result = repository.signUp(name, email, password)
+                _hasSignSuccess.postValue(result)
             } catch (e: Exception) {
                 Log.e(TAG, "Error signing up", e)
-                _hasSignSuccess.postValue(false)
+                _hasSignSuccess.postValue(null)
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.ffreitas.flowify.ui.signin
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.Toast
@@ -15,11 +16,16 @@ import com.ffreitas.flowify.R
 import com.ffreitas.flowify.databinding.ActivitySignInBinding
 import com.ffreitas.flowify.utils.BackPressedCallback
 import com.ffreitas.flowify.utils.ProgressDialog
+import com.google.firebase.Firebase
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.analytics
+import com.google.firebase.analytics.logEvent
 
 class SignInActivity : AppCompatActivity(), OnClickListener {
 
     private var layout: ActivitySignInBinding? = null
     private lateinit var progressDialog: ProgressDialog
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
     private val model: SignInViewModel by viewModels { SignInViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +36,8 @@ class SignInActivity : AppCompatActivity(), OnClickListener {
         layout = ActivitySignInBinding
             .inflate(layoutInflater)
             .also { setContentView(it.root) }
+
+        firebaseAnalytics = Firebase.analytics
 
         ViewCompat.setOnApplyWindowInsetsListener(layout!!.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -55,18 +63,28 @@ class SignInActivity : AppCompatActivity(), OnClickListener {
             .doOnTextChanged { text, _, _, _ -> handleEmailChanged(text.toString()) }
 
         layout!!.inputPassword
-            .doOnTextChanged { text, _, _, _ ->  handlePasswordChanged(text.toString()) }
+            .doOnTextChanged { text, _, _, _ -> handlePasswordChanged(text.toString()) }
 
         layout!!.buttonSignIn.setOnClickListener(this)
 
-        model.hasSignInSuccess.observe(this) { success ->
+        model.hasSignInSuccess.observe(this) { user ->
             progressDialog.dismiss()
-            if (success) onBackPressedDispatcher.onBackPressed()
+            if (user == null) {
+                handleErrorMessage(R.string.signin_screen_submit_error)
+                return@observe
+            }
+            Log.d(TAG, "Sign In Success")
+            firebaseAnalytics
+                .logEvent(FirebaseAnalytics.Event.LOGIN) {
+                    param(FirebaseAnalytics.Param.METHOD, "email")
+                    param(FirebaseAnalytics.Param.CONTENT, "user: ${user.uid}")
+                }
+            finish()
         }
     }
 
     private fun handleEmailChanged(email: String) {
-        model.onEmailChanged(email)
+        model.onEmailChanged(email.trim())
 
         layout!!.inputEmail.error =
             if (model.emailIsValid())
@@ -76,7 +94,7 @@ class SignInActivity : AppCompatActivity(), OnClickListener {
     }
 
     private fun handlePasswordChanged(password: String) {
-        model.onPasswordChanged(password)
+        model.onPasswordChanged(password.trim())
 
         layout!!.inputPassword.error =
             if (model.passwordIsValid())
@@ -106,5 +124,9 @@ class SignInActivity : AppCompatActivity(), OnClickListener {
     override fun onDestroy() {
         super.onDestroy()
         layout = null
+    }
+
+    companion object {
+        private const val TAG = "SignInActivity"
     }
 }

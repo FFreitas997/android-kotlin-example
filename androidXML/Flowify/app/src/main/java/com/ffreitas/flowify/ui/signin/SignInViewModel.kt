@@ -10,8 +10,9 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.ffreitas.flowify.FlowifyApplication
-import com.ffreitas.flowify.data.repository.AuthRepository
-import com.ffreitas.flowify.data.repository.DefaultAuthRepository
+import com.ffreitas.flowify.data.repository.auth.AuthRepository
+import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 
 class SignInViewModel(private val repository: AuthRepository) : ViewModel() {
@@ -19,8 +20,8 @@ class SignInViewModel(private val repository: AuthRepository) : ViewModel() {
     private var email = ""
     private var password = ""
 
-    private val _hasSignInSuccess: MutableLiveData<Boolean> = MutableLiveData()
-    val hasSignInSuccess: LiveData<Boolean> = _hasSignInSuccess
+    private val _hasSignInSuccess: MutableLiveData<FirebaseUser?> = MutableLiveData()
+    val hasSignInSuccess: LiveData<FirebaseUser?> = _hasSignInSuccess
 
 
     fun onEmailChanged(email: String) {
@@ -42,11 +43,11 @@ class SignInViewModel(private val repository: AuthRepository) : ViewModel() {
     fun signIn() {
         viewModelScope.launch {
             try {
-                val success = repository.signIn(email, password)
-                _hasSignInSuccess.postValue(success)
+                val user = repository.signIn(email, password)
+                _hasSignInSuccess.postValue(user)
             } catch (e: Exception) {
                 Log.e(TAG, "Error signing in", e)
-                _hasSignInSuccess.postValue(false)
+                _hasSignInSuccess.postValue(null)
             }
         }
     }
