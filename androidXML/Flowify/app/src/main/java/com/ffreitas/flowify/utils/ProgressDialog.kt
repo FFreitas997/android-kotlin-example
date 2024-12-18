@@ -4,7 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import com.ffreitas.flowify.R
 
-class ProgressDialog(private val context: Context)  {
+class ProgressDialog(context: Context)  {
 
     private var dialog: Dialog = Dialog(context)
 

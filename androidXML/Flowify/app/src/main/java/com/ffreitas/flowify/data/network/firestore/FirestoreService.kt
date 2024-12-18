@@ -1,6 +1,6 @@
 package com.ffreitas.flowify.data.network.firestore
 
-import com.ffreitas.flowify.data.network.models.User
+import com.ffreitas.flowify.data.models.User
 
 interface FirestoreService {
 

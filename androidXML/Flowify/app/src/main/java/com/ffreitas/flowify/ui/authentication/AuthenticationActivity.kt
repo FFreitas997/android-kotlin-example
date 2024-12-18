@@ -9,12 +9,13 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
-import android.view.animation.OvershootInterpolator
+import android.view.animation.CycleInterpolator
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.ffreitas.flowify.R
@@ -22,6 +23,7 @@ import com.ffreitas.flowify.databinding.ActivityAuthenticationBinding
 import com.ffreitas.flowify.ui.home.HomeActivity
 import com.ffreitas.flowify.ui.signin.SignInActivity
 import com.ffreitas.flowify.ui.signup.SignUpActivity
+import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
 import com.ffreitas.flowify.utils.Constants.SPLASH_SCREEN_DELAY
 import com.ffreitas.flowify.utils.ProgressDialog
 
@@ -33,32 +35,21 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
     private val model by viewModels<AuthenticationViewModel> { AuthenticationViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val isSignOut = intent.getBooleanExtra(SIGN_OUT_EXTRA, false)
+
+        if (!isSignOut) {
+            installSplashScreen().apply {
+                setKeepOnScreenCondition { keepSplashOnScreen }
+                setOnExitAnimationListener { handleExitAnimationListener(it) }
+            }
+
+            Handler(Looper.getMainLooper())
+                .postDelayed({ keepSplashOnScreen = false }, SPLASH_SCREEN_DELAY)
+        }
+
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-
-        installSplashScreen()
-            .apply {
-                setKeepOnScreenCondition { keepSplashOnScreen }
-                setOnExitAnimationListener { screen ->
-                    val scaleDown = AnimatorSet().apply {
-                        playTogether(
-                            ObjectAnimator.ofFloat(screen.iconView, View.SCALE_X, 0.5f, 0f),
-                            ObjectAnimator.ofFloat(screen.iconView, View.SCALE_Y, 0.5f, 0f)
-                        )
-                        interpolator = OvershootInterpolator()
-                        duration = 500L
-                        doOnEnd {
-                            screen.remove()
-                            handleAfterSplashScreen()
-                        }
-                    }
-                    scaleDown.start()
-                }
-            }
-
-        Handler(Looper.getMainLooper())
-            .postDelayed({ keepSplashOnScreen = false }, SPLASH_SCREEN_DELAY)
 
         layout = ActivityAuthenticationBinding.inflate(layoutInflater)
             .also { setContentView(it.root) }
@@ -79,6 +70,19 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
             Log.d(TAG, "User found: ${user.email}")
             Intent(this, HomeActivity::class.java)
                 .also { startActivity(it) }
+        }
+    }
+
+    private fun handleExitAnimationListener(screen: SplashScreenViewProvider) {
+        AnimatorSet().apply {
+            playTogether(
+                ObjectAnimator.ofFloat(screen.iconView, View.SCALE_X, 0.5f, 0f),
+                ObjectAnimator.ofFloat(screen.iconView, View.SCALE_Y, 0.5f, 0f)
+            )
+            interpolator = CycleInterpolator(2f)
+            duration = SPLASH_SCREEN_DELAY / 2
+            doOnEnd { screen.remove(); handleAfterSplashScreen() }
+            start()
         }
     }
 

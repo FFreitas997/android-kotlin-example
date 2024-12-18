@@ -1,7 +1,7 @@
 package com.ffreitas.flowify.data.network.firestore
 
 import android.util.Log
-import com.ffreitas.flowify.data.network.models.User
+import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.utils.Constants.USER_COLLECTION
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions

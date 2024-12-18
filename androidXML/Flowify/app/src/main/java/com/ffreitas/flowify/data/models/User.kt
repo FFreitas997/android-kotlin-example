@@ -1,4 +1,4 @@
-package com.ffreitas.flowify.data.network.models
+package com.ffreitas.flowify.data.models
 
 import android.os.Parcel
 import android.os.Parcelable

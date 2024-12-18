@@ -1,7 +1,7 @@
 package com.ffreitas.flowify.data.repository.user
 
 import com.ffreitas.flowify.data.network.firestore.FirestoreService
-import com.ffreitas.flowify.data.network.models.User
+import com.ffreitas.flowify.data.models.User
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

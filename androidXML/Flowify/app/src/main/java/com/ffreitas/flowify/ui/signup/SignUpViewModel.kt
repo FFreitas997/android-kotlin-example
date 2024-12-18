@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.ffreitas.flowify.FlowifyApplication
-import com.ffreitas.flowify.data.network.models.User
+import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.data.repository.auth.AuthRepository
 import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
 import com.ffreitas.flowify.data.repository.user.DefaultUserRepository

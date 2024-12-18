@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "103473899599",
+    "project_id": "flowify-d6109",
+    "storage_bucket": "flowify-d6109.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:103473899599:android:0e34137bdc699201bfe23a",
+        "android_client_info": {
+          "package_name": "com.ffreitas.flowify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrtNAhtyuFzX4BxD196BIs7bL-gvC8mC4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
