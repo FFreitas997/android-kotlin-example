@@ -8,7 +8,7 @@
     <string name="signup_screen_email_hint">Por favor insira seu e-mail</string>
     <string name="signup_screen_name_hint">Por favor digite seu nome</string>
     <string name="signup_screen_title">Digite seu nome, e-mail e senha para se registrar conosco</string>
-    <string name="signup_screen_password_invalid">A password é mandatório e tem de ter no minimo 6 characteres</string>
+    <string name="signup_screen_password_invalid">A password é mandatório e tem de ter no mínimo 6 characteres</string>
     <string name="signup_screen_submit_error">Ocorreu um erro ao efetuar login. Tente novamente</string>
     <string name="loading">Por favor aguarde …</string>
     <string name="signup_screen_name_invalid">O nome de utilizador é mandatório</string>
@@ -17,5 +17,10 @@
     <string name="signin_screen_email_hint">Por favor insira seu e-mail</string>
     <string name="signin_screen_password_hint">Por favor digite sua senha</string>
     <string name="signin_screen_email_invalid">O email de utilizador é mandatório e tem de ser válido</string>
-    <string name="signin_screen_password_invalid">A password é mandatório e tem de ter no minimo 6 characteres</string>
+    <string name="signin_screen_password_invalid">A password é mandatório e tem de ter no mínimo 6 characteres</string>
+    <string name="menu_home">Inicial</string>
+    <string name="sign_out">Sair</string>
+    <string name="sign_out_alert_dialog_message">Tem certeza de que deseja sair?</string>
+    <string name="account_image">imagem da conta</string>
+    <string name="menu_account">Conta</string>
 </resources>
