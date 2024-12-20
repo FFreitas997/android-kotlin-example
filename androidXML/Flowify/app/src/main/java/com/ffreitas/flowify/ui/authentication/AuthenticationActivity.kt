@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.animation.CycleInterpolator
@@ -25,12 +24,10 @@ import com.ffreitas.flowify.ui.signin.SignInActivity
 import com.ffreitas.flowify.ui.signup.SignUpActivity
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
 import com.ffreitas.flowify.utils.Constants.SPLASH_SCREEN_DELAY
-import com.ffreitas.flowify.utils.ProgressDialog
 
 class AuthenticationActivity : AppCompatActivity(), OnClickListener {
 
     private var layout: ActivityAuthenticationBinding? = null
-    private lateinit var progressDialog: ProgressDialog
     private var keepSplashOnScreen = true
     private val model by viewModels<AuthenticationViewModel> { AuthenticationViewModel.Factory }
 
@@ -44,7 +41,7 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
             }
 
             Handler(Looper.getMainLooper())
-                .postDelayed({ keepSplashOnScreen = false }, SPLASH_SCREEN_DELAY)
+                .apply { postDelayed({ keepSplashOnScreen = false }, SPLASH_SCREEN_DELAY) }
         }
 
         super.onCreate(savedInstanceState)
@@ -54,8 +51,6 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
         layout = ActivityAuthenticationBinding.inflate(layoutInflater)
             .also { setContentView(it.root) }
 
-        progressDialog = ProgressDialog(this)
-
         ViewCompat.setOnApplyWindowInsetsListener(layout?.root!!) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -64,13 +59,6 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
 
         layout?.btnSignIn?.setOnClickListener(this)
         layout?.btnSignUp?.setOnClickListener(this)
-        model.hasUser.observe(this) { user ->
-            progressDialog.dismiss()
-            if (user == null) return@observe
-            Log.d(TAG, "User found: ${user.email}")
-            Intent(this, HomeActivity::class.java)
-                .also { startActivity(it) }
-        }
     }
 
     private fun handleExitAnimationListener(screen: SplashScreenViewProvider) {
@@ -87,10 +75,9 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
     }
 
     private fun handleAfterSplashScreen() {
-        val hasUser = model.hasCurrentUser() ?: return
-        Log.d(TAG, "User is already signed in")
-        model.getUser(hasUser.email ?: return)
-        progressDialog.show()
+        model.hasCurrentUser() ?: return
+        Intent(this, HomeActivity::class.java)
+            .also { startActivity(it) }
     }
 
     private fun handleSignIn() {
@@ -113,10 +100,6 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
     override fun onDestroy() {
         layout = null
         super.onDestroy()
-    }
-
-    companion object {
-        private const val TAG = "AuthenticationActivity"
     }
 }
 

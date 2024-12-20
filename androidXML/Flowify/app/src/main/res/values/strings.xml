@@ -27,4 +27,15 @@
     <string name="sign_out_alert_dialog_message">Are you sure you want to sign out?</string>
     <string name="account_image">account image</string>
     <string name="menu_account">Account</string>
+    <string name="account_fragment_email">Email</string>
+    <string name="account_fragment_name">Name</string>
+    <string name="account_fragment_phone_number">Phone Number</string>
+    <string name="account_fragment_button">Update</string>
+    <string name="account_fragment_phone_number_error">Phone is required and must be a number with 9 digits</string>
+    <string name="account_fragment_name_error">Name is required</string>
+    <string name="account_fragment_submit_error">Something went wrong on submit. Please check your information.</string>
+    <string name="account_fragment_picture_error">The picture is required and must be a valid link</string>
+    <string name="account_fragment_permission_title">Permission needed</string>
+    <string name="account_fragment_permission_text">The selection image permission is required to select a profile picture.</string>
+    <string name="account_fragment_permission_denied">Permission denied</string>
 </resources>

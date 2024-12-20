@@ -6,6 +6,105 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.components.account.AccountFragment">
 
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/regular_margin"
+        app:cardCornerRadius="@dimen/account_fragment_card_corner_radius"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="@dimen/account_fragment_card_elevation"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/account_image_container"
+                android:layout_width="@dimen/account_fragment_image_size"
+                android:layout_height="@dimen/account_fragment_image_size"
+                android:background="@drawable/nav_header_account_background"
+                android:clickable="true"
+                android:layout_margin="@dimen/regular_margin"
+                android:padding="@dimen/small_padding">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/account_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/account_image"
+                    android:src="@drawable/person"
+                    app:shapeAppearanceOverlay="@style/Circular" />
+
+            </FrameLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/regular_margin"
+                android:hint="@string/account_fragment_name"
+                app:endIconMode="clear_text">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/regular_margin"
+                android:hint="@string/account_fragment_email"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/mail_24px">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusableInTouchMode="false"
+                    android:inputType="textEmailAddress" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/regular_margin"
+                android:hint="@string/account_fragment_phone_number"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/call_24px">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="phone" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/account_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/regular_margin"
+                android:text="@string/account_fragment_button"
+                android:textStyle="bold"
+                style="@style/Widget.Material3.Button.ElevatedButton" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,7 +4,11 @@ import com.ffreitas.flowify.data.models.User
 
 interface UserRepository {
 
-    suspend fun storeUser(user: User): Boolean
+    suspend fun createUser(user: User): Boolean
 
     suspend fun getUser(email: String): User?
+
+    suspend fun getCurrentUser(): User?
+
+    suspend fun updateUser(user: User): Boolean
 }

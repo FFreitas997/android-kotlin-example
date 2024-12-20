@@ -16,7 +16,7 @@
         android:layout_height="@dimen/nav_header_account_image_size"
         android:layout_marginBottom="@dimen/nav_header_vertical_spacing"
         android:background="@drawable/nav_header_account_background"
-        android:padding="@dimen/small_padding">
+        android:padding="4dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/account_image"
@@ -30,6 +30,7 @@
     </FrameLayout>
 
     <TextView
+        android:id="@+id/account_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/app_name"

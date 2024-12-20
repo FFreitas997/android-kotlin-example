@@ -79,7 +79,7 @@ class SignInActivity : AppCompatActivity(), OnClickListener {
             firebaseAnalytics
                 .logEvent(FirebaseAnalytics.Event.LOGIN) {
                     param(FirebaseAnalytics.Param.METHOD, "email")
-                    param(FirebaseAnalytics.Param.CONTENT, "user: ${user.id}")
+                    param(FirebaseAnalytics.Param.CONTENT, "user: ${user.uid}")
                 }
             Intent(this, HomeActivity::class.java)
                 .also { startActivity(it) }

@@ -1,12 +1,14 @@
 package com.ffreitas.flowify.ui.home
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.View.OnClickListener
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -18,18 +20,26 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.bumptech.glide.Glide
 import com.ffreitas.flowify.R
+import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.ActivityHomeBinding
 import com.ffreitas.flowify.ui.authentication.AuthenticationActivity
+import com.ffreitas.flowify.utils.Constants
+import com.ffreitas.flowify.utils.Constants.APPLICATION_PREFERENCE_NAME
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
+import com.ffreitas.flowify.utils.Constants.USER_PREFERENCE_NAME
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.serialization.json.Json
 
 class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListener {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityHomeBinding
+    private lateinit var sharedPreferences: SharedPreferences
     private val viewModel: HomeActivityViewModel by viewModels { HomeActivityViewModel.Factory }
+    private val json = Json { ignoreUnknownKeys = true }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +63,8 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
             )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        viewModel.user.observe(this) { user -> user?.let { updateUserInformation(it) } }
+        sharedPreferences = getSharedPreferences(APPLICATION_PREFERENCE_NAME, MODE_PRIVATE)
     }
 
     private fun handleSignOut() {
@@ -77,6 +89,24 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
             .setPositiveButton("Yes") { log, _ -> log.dismiss(); onPositive() }
             .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
             .show()
+    }
+
+    private fun updateUserInformation(user: User){
+        Log.d("HomeActivity", "User found: ${user.email}")
+
+        Glide
+            .with(this)
+            .load(user.picture)
+            .centerCrop()
+            .placeholder(R.drawable.person)
+            .into(findViewById(R.id.account_image))
+
+        findViewById<TextView>(R.id.account_name)
+            .apply { text = user.name }
+
+        val encoded = json.encodeToString(User.serializer(), user)
+        sharedPreferences.edit()
+            .putString(USER_PREFERENCE_NAME, encoded).apply()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

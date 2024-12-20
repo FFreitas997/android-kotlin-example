@@ -10,23 +10,18 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.ffreitas.flowify.FlowifyApplication
-import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.data.repository.auth.AuthRepository
 import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
-import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
-import com.ffreitas.flowify.data.repository.user.UserRepository
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 
-class SignInViewModel(
-    private val authRepository: AuthRepository,
-    private val storeRepository: UserRepository
-) : ViewModel() {
+class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private var email = ""
     private var password = ""
 
-    private val _hasSignInSuccess: MutableLiveData<User?> = MutableLiveData()
-    val hasSignInSuccess: LiveData<User?> = _hasSignInSuccess
+    private val _hasSignInSuccess: MutableLiveData<FirebaseUser?> = MutableLiveData()
+    val hasSignInSuccess: LiveData<FirebaseUser?> = _hasSignInSuccess
 
 
     fun onEmailChanged(email: String) {
@@ -50,11 +45,7 @@ class SignInViewModel(
             try {
                 val firebaseUser = authRepository.signIn(email, password)
                     ?: throw IllegalStateException("Failed to sign in")
-
-                val user = storeRepository.getUser(firebaseUser.email ?: "")
-                checkNotNull(user) { "Failed to get user" }
-
-                _hasSignInSuccess.postValue(user)
+                _hasSignInSuccess.postValue(firebaseUser)
             } catch (e: Exception) {
                 Log.e(TAG, "Error signing in", e)
                 _hasSignInSuccess.postValue(null)
@@ -70,10 +61,9 @@ class SignInViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
                 val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
-                val authRepository = DefaultAuthRepository(application.authFirebase)
-                val storeRepository = DefaultUserRepository(application.firestore)
+                val authRepository = DefaultAuthRepository(application.authentication)
 
-                return SignInViewModel(authRepository, storeRepository) as T
+                return SignInViewModel(authRepository) as T
             }
         }
     }

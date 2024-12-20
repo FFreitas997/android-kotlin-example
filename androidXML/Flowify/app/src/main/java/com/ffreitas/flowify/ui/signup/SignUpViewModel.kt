@@ -65,7 +65,7 @@ class SignUpViewModel(
                     email = result.email ?: ""
                 )
 
-                val storeSuccess = storeRepository.storeUser(user)
+                val storeSuccess = storeRepository.createUser(user)
                 if (!storeSuccess)
                     throw Exception("Failed to store user")
 
@@ -85,7 +85,7 @@ class SignUpViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
                 val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
-                val authRepository = DefaultAuthRepository(application.authFirebase)
+                val authRepository = DefaultAuthRepository(application.authentication)
                 val storeRepository = DefaultUserRepository(application.firestore)
 
                 return SignUpViewModel(authRepository, storeRepository) as T

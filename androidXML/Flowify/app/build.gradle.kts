@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 android {
@@ -42,6 +43,12 @@ android {
 }
 
 dependencies {
+
+    implementation(libs.firebase.storage)
+
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.glide)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
