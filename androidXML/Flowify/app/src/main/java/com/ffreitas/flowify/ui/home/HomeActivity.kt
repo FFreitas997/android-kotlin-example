@@ -9,12 +9,17 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -25,21 +30,24 @@ import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.ActivityHomeBinding
 import com.ffreitas.flowify.ui.authentication.AuthenticationActivity
-import com.ffreitas.flowify.utils.Constants
 import com.ffreitas.flowify.utils.Constants.APPLICATION_PREFERENCE_NAME
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
 import com.ffreitas.flowify.utils.Constants.USER_PREFERENCE_NAME
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListener {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityHomeBinding
-    private lateinit var sharedPreferences: SharedPreferences
-    private val viewModel: HomeActivityViewModel by viewModels { HomeActivityViewModel.Factory }
+    private val model: SharedViewModel by viewModels { SharedViewModel.Factory }
     private val json = Json { ignoreUnknownKeys = true }
+
+    private val sharedPreferences: SharedPreferences by lazy {
+        getSharedPreferences(APPLICATION_PREFERENCE_NAME, MODE_PRIVATE)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,36 +71,82 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
             )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-        viewModel.user.observe(this) { user -> user?.let { updateUserInformation(it) } }
-        sharedPreferences = getSharedPreferences(APPLICATION_PREFERENCE_NAME, MODE_PRIVATE)
+
+        handleUIState()
+    }
+
+    private fun handleUIState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                model.state.collect { state ->
+                    when (state) {
+                        is UIState.Success -> {
+                            Log.d(
+                                TAG,
+                                "The user information was found with email: ${state.user.email}"
+                            )
+                            updateUserInformation(state.user)
+                        }
+
+                        is UIState.Error -> {
+                            Log.d(TAG, "Error: ${state.message}")
+                            handleErrorMessage(R.string.home_activity_user_error)
+                        }
+
+                        else -> {
+                            Log.d(TAG, "State not handled")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        model.getCurrentUser()
+        Log.d(TAG, "User information requested")
+    }
+
+    private fun handleErrorMessage(@StringRes message: Int) {
+        Snackbar
+            .make(binding.root, getString(message), Snackbar.LENGTH_SHORT)
+            .setBackgroundTint(resources.getColor(R.color.md_theme_error, null))
+            .setTextColor(resources.getColor(R.color.md_theme_onError, null))
+            .setAnchorView(R.id.fab)
+            .show()
     }
 
     private fun handleSignOut() {
         alertDialogSignOut {
-            Log.d("HomeActivity", "Sign out")
-            viewModel.signOut()
-            val intent = Intent(this, AuthenticationActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-            intent.putExtra(SIGN_OUT_EXTRA, true)
-            startActivity(intent)
-            finish()
+            Log.d(TAG, "User signed out")
+            model.signOut()
+            Intent(this, AuthenticationActivity::class.java)
+                .apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                    putExtra(SIGN_OUT_EXTRA, true)
+                }
+                .also {
+                    startActivity(it)
+                    finish()
+                }
         }
     }
 
-    private fun alertDialogSignOut(onPositive: () -> Unit) {
+    private fun alertDialogSignOut(handler: () -> Unit) {
         AlertDialog
             .Builder(this)
             .setTitle(getString(R.string.sign_out))
             .setMessage(getString(R.string.sign_out_alert_dialog_message))
             .setIcon(ContextCompat.getDrawable(this, R.drawable.dangerous_24px))
             .setCancelable(true)
-            .setPositiveButton("Yes") { log, _ -> log.dismiss(); onPositive() }
+            .setPositiveButton("Yes") { log, _ -> log.dismiss(); handler() }
             .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
-    private fun updateUserInformation(user: User){
-        Log.d("HomeActivity", "User found: ${user.email}")
+    private fun updateUserInformation(user: User) {
+        Log.d(TAG, "User found: ${user.email}")
 
         Glide
             .with(this)
@@ -105,7 +159,8 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
             .apply { text = user.name }
 
         val encoded = json.encodeToString(User.serializer(), user)
-        sharedPreferences.edit()
+        sharedPreferences
+            .edit()
             .putString(USER_PREFERENCE_NAME, encoded).apply()
     }
 
@@ -123,9 +178,7 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
     override fun onClick(view: View) {
         when (view.id) {
             R.id.fab ->
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null)
-                    .setAnchorView(R.id.fab).show()
+                Toast.makeText(this, "Fab clicked", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -137,5 +190,9 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
 
             else -> false
         }
+    }
+
+    companion object {
+        private const val TAG = "HomeActivity"
     }
 }

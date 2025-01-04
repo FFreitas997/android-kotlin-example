@@ -7,8 +7,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private const val TAG = "DefaultAuthRepository"
-
 class DefaultAuthRepository(
     private val firebase: FirebaseAuthService,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -16,25 +14,27 @@ class DefaultAuthRepository(
 
     override suspend fun signUp(name: String, email: String, password: String) =
         withContext(dispatcher) {
-            try {
-                firebase.signUp(name, email, password)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error Sign Up ${e.message}")
-                null
+            Log.d(TAG, "signUp: $email")
+            require(name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
+                "Name, email and password must not be empty"
             }
+            firebase.signUp(name, email, password)
         }
 
     override suspend fun signIn(email: String, password: String) =
         withContext(dispatcher) {
-            try {
-                firebase.signIn(email, password)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error Sign In ${e.message}")
-                null
+            Log.d(TAG, "signIn: $email")
+            require(email.isNotEmpty() && password.isNotEmpty()) {
+                "Email and password must not be empty"
             }
+            firebase.signIn(email, password)
         }
 
     override fun getCurrentUser(): FirebaseUser? = firebase.getCurrentUser()
 
     override fun signOut() = firebase.signOut()
+
+    companion object {
+        private const val TAG = "Auth Repository"
+    }
 }

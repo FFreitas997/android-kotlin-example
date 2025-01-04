@@ -13,37 +13,39 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity.MODE_PRIVATE
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.Glide
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.FragmentAccountBinding
-import com.ffreitas.flowify.utils.Constants
+import com.ffreitas.flowify.ui.home.SharedViewModel
 import com.ffreitas.flowify.utils.Constants.APPLICATION_PREFERENCE_NAME
+import com.ffreitas.flowify.utils.Constants.USER_PREFERENCE_NAME
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import java.io.File
-import java.io.FileOutputStream
 import java.util.Locale
 
-class AccountFragment : Fragment(), OnClickListener {
+class AccountFragment : Fragment() {
 
-    private lateinit var sharedPreferences: SharedPreferences
     private lateinit var progressDialog: ProgressDialog
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
@@ -53,23 +55,33 @@ class AccountFragment : Fragment(), OnClickListener {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val model: AccountViewModel by viewModels() { AccountViewModel.Factory }
+    private val model: AccountViewModel by viewModels { AccountViewModel.Factory }
+    private val shared: SharedViewModel by activityViewModels { SharedViewModel.Factory }
+
     private val json = Json { ignoreUnknownKeys = true }
-
-    private val activityResultPermissions = requireActivity()
-        .registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            handleRequestPermissionResult(it) {
-                pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-            }
-        }
-
-    private val pickMedia = registerForActivityResult(PickVisualMedia()) {
-        if (it == null) {
-            Log.e(TAG, "Failed to get image from gallery.")
-            return@registerForActivityResult
-        }
-        handlePhotoSelection(it)
+    private val sharedPreferences: SharedPreferences by lazy {
+        requireActivity()
+            .getSharedPreferences(APPLICATION_PREFERENCE_NAME, MODE_PRIVATE)
     }
+
+    private val activityResultPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            var permissionGranted = true
+            it.entries.forEach { entry ->
+                if (!entry.value)
+                    permissionGranted = false
+            }
+            if (permissionGranted)
+                pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+            else
+                handleErrorMessage(R.string.account_fragment_permission_denied)
+        }
+
+    private val pickMedia =
+        registerForActivityResult(PickVisualMedia()) { uri ->
+            uri ?: return@registerForActivityResult
+            handlePhotoSelection(uri)
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -80,38 +92,93 @@ class AccountFragment : Fragment(), OnClickListener {
         val root: View = binding.root
 
         progressDialog = ProgressDialog(requireActivity())
-
-        sharedPreferences =
-            activity?.getSharedPreferences(APPLICATION_PREFERENCE_NAME, MODE_PRIVATE) ?: return root
-
         firebaseAnalytics = Firebase.analytics
 
-        val userEncoded = sharedPreferences.getString(Constants.USER_PREFERENCE_NAME, null)
-
-        binding.inputName.doOnTextChanged { text, _, _, _ -> model.handleChangeName(text) }
-        binding.inputPhone.doOnTextChanged { text, _, _, _ -> model.handleChangePhone(text) }
-        binding.accountButton.setOnClickListener(this)
-        binding.accountImageContainer.setOnClickListener(this)
-
-        if (!userEncoded.isNullOrEmpty())
-            updateUI(userEncoded)
-
-        model.accountUpdated.observe(viewLifecycleOwner) { hasSuccess ->
-            progressDialog.dismiss()
-            if (!hasSuccess) {
-                handleErrorMessage()
-                return@observe
+        binding
+            .inputName
+            .doOnTextChanged { text, _, _, _ ->
+                binding.inputName.error = null
+                model.handleChangeName(text)
             }
-            Log.d(TAG, "User information updated successfully.")
-            firebaseAnalytics.logEvent("account_information_updated") {
-                param(FirebaseAnalytics.Param.LEVEL, "Account Information")
-                param(FirebaseAnalytics.Param.SUCCESS, "true")
-                param(FirebaseAnalytics.Param.CONTENT_TYPE, "User Information")
+
+        binding
+            .inputPhone
+            .doOnTextChanged { text, _, _, _ ->
+                binding.inputPhone.error = null
+                model.handleChangePhone(text)
             }
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+
+        binding.accountButton.setOnClickListener { onSubmit() }
+        binding.accountImageContainer.setOnClickListener { handleImageSelection() }
+
+        val userEncoded = sharedPreferences.getString(USER_PREFERENCE_NAME, null)
+
+        if (!userEncoded.isNullOrEmpty()) {
+            val user = json.decodeFromString(User.serializer(), userEncoded)
+            model.setCurrentUser(user)
+            updateUserUI(user)
         }
 
+        uiStateUpdate()
+
         return root
+    }
+
+    private fun uiStateUpdate() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                model.uiState.collect { state ->
+                    when (state) {
+                        is UIState.Loading -> {
+                            progressDialog.show()
+                        }
+
+                        is UIState.Success -> {
+                            progressDialog.dismiss()
+                            handleSuccess()
+                        }
+
+                        is UIState.Error -> {
+                            progressDialog.dismiss()
+                            handleError(state.message)
+                        }
+
+                        is UIState.FileError -> {
+                            progressDialog.dismiss()
+                            Log.e(TAG, "Failed to load image: ${state.message}")
+                            handleErrorMessage(R.string.account_fragment_file_error)
+                        }
+
+                        else -> {
+                            // Do nothing
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleSuccess() {
+        Log.d(TAG, "User information updated successfully.")
+        firebaseAnalytics.logEvent("account_information_updated") {
+            param(FirebaseAnalytics.Param.LEVEL, "Account Information")
+            param(FirebaseAnalytics.Param.SUCCESS, "true")
+            param(FirebaseAnalytics.Param.CONTENT_TYPE, "User Information")
+            param(FirebaseAnalytics.Param.CONTENT, "User information updated successfully.")
+        }
+        shared.getCurrentUser()
+        requireActivity().onBackPressedDispatcher.onBackPressed()
+    }
+
+    private fun handleError(error: String) {
+        Log.e(TAG, "Error updating user information: $error")
+        firebaseAnalytics.logEvent("account_information_updated") {
+            param(FirebaseAnalytics.Param.LEVEL, "Account Information")
+            param(FirebaseAnalytics.Param.SUCCESS, "false")
+            param(FirebaseAnalytics.Param.CONTENT_TYPE, "Error")
+            param(FirebaseAnalytics.Param.CONTENT, error)
+        }
+        handleErrorMessage(R.string.account_fragment_submit_error)
     }
 
     private fun isFormValid(): Boolean {
@@ -132,9 +199,7 @@ class AccountFragment : Fragment(), OnClickListener {
         }
     }
 
-    private fun updateUI(userEncoded: String) {
-        val user = json.decodeFromString(User.serializer(), userEncoded)
-        model.setCurrentUser(user)
+    private fun updateUserUI(user: User) {
         binding.inputName.setText(user.name)
         binding.inputPhone.setText(String.format(Locale.getDefault(), "%d", user.mobile))
         binding.inputEmail.setText(user.email)
@@ -145,37 +210,6 @@ class AccountFragment : Fragment(), OnClickListener {
             .centerCrop()
             .placeholder(R.drawable.person)
             .into(binding.accountImage)
-    }
-
-    private fun handleRequestPermissionResult(
-        permissions: Map<String, Boolean>,
-        permissionGrantedListener: () -> Unit
-    ) {
-        var permissionGranted = true
-        permissions.entries.forEach {
-            if (!it.value)
-                permissionGranted = false
-        }
-        if (permissionGranted)
-            permissionGrantedListener()
-        else
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.account_fragment_permission_denied),
-                Toast.LENGTH_SHORT
-            ).show()
-    }
-
-    override fun onClick(view: View) {
-        when (view.id) {
-            R.id.account_button -> {
-                onSubmit()
-            }
-
-            R.id.account_image_container -> {
-                handleImageSelection()
-            }
-        }
     }
 
 
@@ -253,52 +287,29 @@ class AccountFragment : Fragment(), OnClickListener {
     }
 
     private fun handlePhotoSelection(uri: Uri) {
-        val filename = "${System.currentTimeMillis()}.jpg"
-        val file = File(requireContext().filesDir, filename)
-
-        try {
-
-            val inputStream = requireContext().contentResolver.openInputStream(uri)
-            val outputStream = FileOutputStream(file)
-
-            inputStream?.copyTo(outputStream)
-
-            inputStream?.close()
-            outputStream.close()
-
-            model.handlePictureSelection(file)
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving profile picture: ${e.message}")
-        } finally {
-
-            Glide
-                .with(this)
-                .load(uri)
-                .centerCrop()
-                .placeholder(R.drawable.person)
-                .into(binding.accountImage)
-
-        }
+        model.handlePictureSelection(requireContext(), uri)
+        Glide
+            .with(this)
+            .load(uri)
+            .centerCrop()
+            .placeholder(R.drawable.person)
+            .into(binding.accountImage)
     }
 
     private fun onSubmit() {
         if (!isFormValid()) {
-            handleErrorMessage()
+            handleErrorMessage(R.string.account_fragment_submit_error)
             return
         }
         progressDialog.show()
         model.updateUserInformation()
     }
 
-    private fun handleErrorMessage() {
+    private fun handleErrorMessage(@StringRes message: Int) {
         Snackbar
-            .make(
-                binding.root,
-                getString(R.string.account_fragment_submit_error),
-                Snackbar.LENGTH_SHORT
-            )
-            .setAction("Ok. I got it.") { }
+            .make(binding.root, getString(message), Snackbar.LENGTH_SHORT)
+            .setBackgroundTint(resources.getColor(R.color.md_theme_error, null))
+            .setTextColor(resources.getColor(R.color.md_theme_onError, null))
             .show()
     }
 

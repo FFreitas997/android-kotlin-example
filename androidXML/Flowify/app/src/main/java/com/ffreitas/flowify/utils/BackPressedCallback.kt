@@ -9,44 +9,40 @@ import android.widget.Button
 import androidx.activity.OnBackPressedCallback
 import com.ffreitas.flowify.R
 
-class BackPressedCallback(private val context: Activity, enabled: Boolean) : OnBackPressedCallback(enabled), OnClickListener {
+class BackPressedCallback(private val context: Activity) : OnBackPressedCallback(true),
+    OnClickListener {
 
-    private val tag = BackPressedCallback::class.java.simpleName
-    private val dialog: Dialog
+    private val dialog: Dialog = Dialog(context).apply {
 
-    init {
-        dialog = buildDialog()
+        setContentView(R.layout.custom_alert_dialog)
+
+        setCanceledOnTouchOutside(false)
+
+        findViewById<Button>(R.id.tv_yes)
+            .setOnClickListener(this@BackPressedCallback)
+
+        findViewById<Button>(R.id.tv_no)
+            .setOnClickListener(this@BackPressedCallback)
     }
 
     override fun handleOnBackPressed() {
-        Log.w(tag, "The back button was pressed and handled.")
+        Log.w(TAG, "The back button was pressed and handled.")
         dialog.show()
     }
-
-    private fun buildDialog() =
-        Dialog(context)
-            .apply {
-                setContentView(R.layout.custom_alert_dialog)
-
-                setCanceledOnTouchOutside(false)
-
-                findViewById<Button>(R.id.tv_yes)
-                    .setOnClickListener(this@BackPressedCallback)
-
-                findViewById<Button>(R.id.tv_no)
-                    .setOnClickListener(this@BackPressedCallback)
-            }
-
 
     override fun onClick(view: View) {
         when (view.id) {
             R.id.tv_yes -> {
-                isEnabled = false
-                dialog.dismiss()
+                Log.w(TAG, "The activity was finished.")
+                isEnabled = false // Prevent further back presses while finishing
                 context.finish()
             }
 
             R.id.tv_no -> dialog.dismiss()
         }
+    }
+
+    companion object {
+        private const val TAG = "BackPressedCallback"
     }
 }

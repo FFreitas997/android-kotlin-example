@@ -27,7 +27,9 @@ import com.ffreitas.flowify.utils.Constants.SPLASH_SCREEN_DELAY
 
 class AuthenticationActivity : AppCompatActivity(), OnClickListener {
 
-    private var layout: ActivityAuthenticationBinding? = null
+    private var _layout: ActivityAuthenticationBinding? = null
+    private val layout get() = _layout!!
+
     private var keepSplashOnScreen = true
     private val model by viewModels<AuthenticationViewModel> { AuthenticationViewModel.Factory }
 
@@ -48,17 +50,17 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
 
         enableEdgeToEdge()
 
-        layout = ActivityAuthenticationBinding.inflate(layoutInflater)
+        _layout = ActivityAuthenticationBinding.inflate(layoutInflater)
             .also { setContentView(it.root) }
 
-        ViewCompat.setOnApplyWindowInsetsListener(layout?.root!!) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(layout.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        layout?.btnSignIn?.setOnClickListener(this)
-        layout?.btnSignUp?.setOnClickListener(this)
+        layout.btnSignIn.setOnClickListener(this)
+        layout.btnSignUp.setOnClickListener(this)
     }
 
     private fun handleExitAnimationListener(screen: SplashScreenViewProvider) {
@@ -98,7 +100,7 @@ class AuthenticationActivity : AppCompatActivity(), OnClickListener {
     }
 
     override fun onDestroy() {
-        layout = null
+        _layout = null
         super.onDestroy()
     }
 }

@@ -13,7 +13,7 @@
     <string name="signup_screen_name_invalid">User name is required</string>
     <string name="signup_screen_email_invalid">User email is required</string>
     <string name="signup_screen_password_invalid">User password is required</string>
-    <string name="signup_screen_submit_error">Something went wrong with your sign up, please try again.</string>
+    <string name="signup_screen_submit_error">Something went wrong with your sign-up, please try again.</string>
     <string name="loading">Please wait …</string>
     <string name="signin_screen_submit_error">Something went wrong with your sign in, please try again.</string>
 
@@ -33,9 +33,13 @@
     <string name="account_fragment_button">Update</string>
     <string name="account_fragment_phone_number_error">Phone is required and must be a number with 9 digits</string>
     <string name="account_fragment_name_error">Name is required</string>
-    <string name="account_fragment_submit_error">Something went wrong on submit. Please check your information.</string>
+    <string name="account_fragment_submit_error">An error occurred while updating the profile. Please check your information.</string>
     <string name="account_fragment_picture_error">The picture is required and must be a valid link</string>
     <string name="account_fragment_permission_title">Permission needed</string>
     <string name="account_fragment_permission_text">The selection image permission is required to select a profile picture.</string>
     <string name="account_fragment_permission_denied">Permission denied</string>
+    <string name="error_updating_user_information">Error updating user information: %1$s</string>
+    <string name="account_fragment_image_error">An error occurred while saving the profile picture.</string>
+    <string name="home_activity_user_error">An error occurred while getting the current user information</string>
+    <string name="account_fragment_file_error">An error occurred while getting an image for profile</string>
 </resources>

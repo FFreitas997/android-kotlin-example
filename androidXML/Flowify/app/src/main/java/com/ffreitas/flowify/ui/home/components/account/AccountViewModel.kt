@@ -1,31 +1,37 @@
 package com.ffreitas.flowify.ui.home.components.account
 
+import android.content.Context
 import android.net.Uri
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.ffreitas.flowify.FlowifyApplication
+import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.data.repository.storage.DefaultStorageRepository
 import com.ffreitas.flowify.data.repository.storage.StorageRepository
-import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
 import com.ffreitas.flowify.data.repository.user.UserRepository
+import com.ffreitas.flowify.utils.Constants
+import com.ffreitas.flowify.utils.Constants.PHONE_LENGTH
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.FileOutputStream
 
 class AccountViewModel(
     private val userRepository: UserRepository,
-    private val storage: StorageRepository
+    private val storageRepository: StorageRepository
 ) : ViewModel() {
 
     private var currentUser: User = User()
-    private val _accountUpdated = MutableLiveData<Boolean>()
-    val accountUpdated: LiveData<Boolean> = _accountUpdated
+
+    private val _uiState = MutableStateFlow<UIState>(UIState.None)
+    val uiState: StateFlow<UIState> = _uiState.asStateFlow()
 
     private var name: String = ""
     private var phone: String = ""
@@ -33,48 +39,36 @@ class AccountViewModel(
 
     private var currentImageFile: File? = null
 
-    fun handleChangeName(text: CharSequence?) {
-        name = (text ?: return).toString().trim()
+    fun handleChangeName(name: CharSequence?) {
+        name?.let { this.name = it.toString().trim() }
     }
 
-    fun handleChangePhone(text: CharSequence?) {
-        phone = (text ?: return).toString().trim()
+    fun handleChangePhone(phone: CharSequence?) {
+        phone?.let { this.phone = it.toString().trim() }
     }
 
-    fun isNameValid(): Boolean {
-        return name.isNotEmpty()
-    }
-
-    fun isPhoneValid(): Boolean {
-        return phone.isNotEmpty() && phone.length == 9
-    }
-
-    fun updateUserInformation() {
-        viewModelScope.launch {
+    fun handlePictureSelection(context: Context, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                if (currentUser.id.isEmpty())
-                    throw Exception("User has not been initialized yet (ID is empty)")
-                currentUser.name = name
-                currentUser.mobile = phone.toLong()
-                if (currentImageFile != null) {
-                    val newURI = storage.uploadFile(currentImageFile!!)
-                    if (newURI != null && currentUser.picture.isNotEmpty()) {
-                        val hasSuccessDelete = storage.deleteFile(Uri.parse(currentUser.picture))
-                        if (!hasSuccessDelete)
-                            Log.e(TAG, "Failed to delete old profile picture")
+                val filename = "${Constants.PROFILE_FILE_PREFIX}_${System.currentTimeMillis()}.jpg"
+                val file = File(context.filesDir, filename)
+                context
+                    .contentResolver
+                    .openInputStream(uri)
+                    .use { input ->
+                        FileOutputStream(file)
+                            .use { output -> input?.copyTo(output) }
                     }
-                    currentUser.picture = (newURI ?: "").toString()
-                }
-                val hasSuccess = userRepository.updateUser(currentUser)
-                if (!hasSuccess)
-                    throw Exception("Failed to update user information")
-                _accountUpdated.postValue(true)
+                currentImageFile = file
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to update user information", e)
-                _accountUpdated.postValue(false)
+                _uiState.value = UIState.FileError(e.message ?: "Failed to load image")
             }
         }
     }
+
+    fun isNameValid() = name.isNotEmpty()
+
+    fun isPhoneValid() = phone.isNotEmpty() && phone.length == PHONE_LENGTH
 
     fun setCurrentUser(user: User) {
         currentUser = user
@@ -83,14 +77,35 @@ class AccountViewModel(
         picture = user.picture
     }
 
-    fun handlePictureSelection(file: File) {
-        picture = Uri.fromFile(file).toString()
-        currentImageFile = file
+    private suspend fun handleSelectedImage(currentFile: File) {
+        val newURI = storageRepository.uploadFile(currentFile)
+        checkNotNull(newURI) { "Failed to upload new profile picture" }
+        if (currentUser.picture.isNotEmpty())
+            storageRepository.deleteFile(Uri.parse(currentUser.picture))
+        currentUser.picture = newURI.toString()
+    }
+
+    fun updateUserInformation() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = UIState.Loading
+                if (!isNameValid() || !isPhoneValid())
+                    throw Exception("Invalid name or phone number")
+                if (currentUser.id.isEmpty())
+                    throw Exception("User has not been initialized yet (ID is empty)")
+                currentUser.name = name
+                currentUser.mobile = phone.toLong()
+                currentImageFile?.let { file -> handleSelectedImage(file) }
+                if (!userRepository.updateUser(currentUser))
+                    throw Exception("Failed to update user information")
+                _uiState.value = UIState.Success
+            } catch (e: Exception) {
+                _uiState.value = UIState.Error(e.message ?: "An error occurred")
+            }
+        }
     }
 
     companion object {
-        private const val TAG = "AccountViewModel"
-
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
 
             @Suppress("UNCHECKED_CAST")
@@ -103,5 +118,12 @@ class AccountViewModel(
             }
         }
     }
+}
 
+sealed class UIState {
+    data object Loading : UIState()
+    data object None : UIState()
+    data object Success : UIState()
+    data class Error(val message: String) : UIState()
+    data class FileError(val message: String) : UIState()
 }
