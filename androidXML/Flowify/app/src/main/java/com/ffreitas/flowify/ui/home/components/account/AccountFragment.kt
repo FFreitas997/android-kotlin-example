@@ -20,7 +20,7 @@ import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity.MODE_PRIVATE
-import androidx.core.widget.doOnTextChanged
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -96,16 +96,16 @@ class AccountFragment : Fragment() {
 
         binding
             .inputName
-            .doOnTextChanged { text, _, _, _ ->
-                binding.inputName.error = null
-                model.handleChangeName(text)
+            .doAfterTextChanged {
+                binding.inputNameLayout.error = null
+                model.handleChangeName(it)
             }
 
         binding
             .inputPhone
-            .doOnTextChanged { text, _, _, _ ->
-                binding.inputPhone.error = null
-                model.handleChangePhone(text)
+            .doAfterTextChanged {
+                binding.inputPhoneLayout.error = null
+                model.handleChangePhone(it)
             }
 
         binding.accountButton.setOnClickListener { onSubmit() }
@@ -127,7 +127,7 @@ class AccountFragment : Fragment() {
     private fun uiStateUpdate() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.uiState.collect { state ->
+                model.state.collect { state ->
                     when (state) {
                         is UIState.Loading -> {
                             progressDialog.show()
@@ -167,7 +167,6 @@ class AccountFragment : Fragment() {
             param(FirebaseAnalytics.Param.CONTENT, "User information updated successfully.")
         }
         shared.getCurrentUser()
-        requireActivity().onBackPressedDispatcher.onBackPressed()
     }
 
     private fun handleError(error: String) {
@@ -182,21 +181,19 @@ class AccountFragment : Fragment() {
     }
 
     private fun isFormValid(): Boolean {
-        return when {
-            !model.isNameValid() -> {
-                binding.inputName.error = getString(R.string.account_fragment_name_error)
-                false
-            }
+        var isValid = true
 
-            !model.isPhoneValid() -> {
-                binding.inputPhone.error = getString(R.string.account_fragment_phone_number_error)
-                false
-            }
-
-            else -> {
-                true
-            }
+        if (!model.isNameValid()) {
+            binding.inputNameLayout.error = getString(R.string.account_fragment_name_error)
+            isValid = false
         }
+
+        if (!model.isPhoneValid()) {
+            binding.inputPhoneLayout.error = getString(R.string.account_fragment_phone_number_error)
+            isValid = false
+        }
+
+        return isValid
     }
 
     private fun updateUserUI(user: User) {
@@ -216,7 +213,7 @@ class AccountFragment : Fragment() {
     @SuppressLint("InlinedApi")
     private fun handleImageSelection() {
         val permissionsUpsideDownCake = arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VISUAL_USER_SELECTED)
-        val permissionsTiramisu = arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VISUAL_USER_SELECTED)
+        val permissionsTiramisu = arrayOf(READ_MEDIA_IMAGES)
         val permissionsOlderVersions = arrayOf(READ_EXTERNAL_STORAGE)
 
         val hasPermissionGranted = when {
@@ -297,11 +294,7 @@ class AccountFragment : Fragment() {
     }
 
     private fun onSubmit() {
-        if (!isFormValid()) {
-            handleErrorMessage(R.string.account_fragment_submit_error)
-            return
-        }
-        progressDialog.show()
+        if (!isFormValid()) return
         model.updateUserInformation()
     }
 

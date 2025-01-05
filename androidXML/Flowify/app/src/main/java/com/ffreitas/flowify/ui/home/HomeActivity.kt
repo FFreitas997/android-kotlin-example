@@ -33,6 +33,7 @@ import com.ffreitas.flowify.ui.authentication.AuthenticationActivity
 import com.ffreitas.flowify.utils.Constants.APPLICATION_PREFERENCE_NAME
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
 import com.ffreitas.flowify.utils.Constants.USER_PREFERENCE_NAME
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -81,15 +82,12 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
                 model.state.collect { state ->
                     when (state) {
                         is UIState.Success -> {
-                            Log.d(
-                                TAG,
-                                "The user information was found with email: ${state.user.email}"
-                            )
+                            Log.d(TAG, "User found with email: ${state.user.email}")
                             updateUserInformation(state.user)
                         }
 
                         is UIState.Error -> {
-                            Log.d(TAG, "Error: ${state.message}")
+                            Log.d(TAG, "Error occurred: ${state.message}")
                             handleErrorMessage(R.string.home_activity_user_error)
                         }
 
@@ -100,12 +98,6 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
                 }
             }
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        model.getCurrentUser()
-        Log.d(TAG, "User information requested")
     }
 
     private fun handleErrorMessage(@StringRes message: Int) {
@@ -147,16 +139,21 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
 
     private fun updateUserInformation(user: User) {
         Log.d(TAG, "User found: ${user.email}")
-
-        Glide
-            .with(this)
-            .load(user.picture)
-            .centerCrop()
-            .placeholder(R.drawable.person)
-            .into(findViewById(R.id.account_image))
-
-        findViewById<TextView>(R.id.account_name)
-            .apply { text = user.name }
+        binding
+            .navView
+            .getHeaderView(0).apply {
+                findViewById<ShapeableImageView>(R.id.account_image)
+                .let {
+                    Glide
+                        .with(this)
+                        .load(user.picture)
+                        .centerCrop()
+                        .placeholder(R.drawable.person)
+                        .into(it)
+                }
+                findViewById<TextView>(R.id.account_name)
+                    .apply { text = user.name }
+        }
 
         val encoded = json.encodeToString(User.serializer(), user)
         sharedPreferences
@@ -177,17 +174,15 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
 
     override fun onClick(view: View) {
         when (view.id) {
-            R.id.fab ->
-                Toast.makeText(this, "Fab clicked", Toast.LENGTH_SHORT).show()
+            R.id.fab -> Toast
+                .makeText(this, "Fab clicked", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.sign_out -> {
-                handleSignOut(); true
-            }
-
+            R.id.sign_out -> { handleSignOut(); true }
             else -> false
         }
     }

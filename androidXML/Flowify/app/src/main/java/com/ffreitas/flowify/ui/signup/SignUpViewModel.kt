@@ -1,5 +1,6 @@
 package com.ffreitas.flowify.ui.signup
 
+import android.text.Editable
 import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
@@ -31,23 +32,23 @@ class SignUpViewModel(
     private val _uiState: MutableStateFlow<UIState> = MutableStateFlow(UIState.None)
     val uiState: StateFlow<UIState> = _uiState.asStateFlow()
 
-    fun onNameChanged(name: CharSequence?) {
-        name?.let { this.name = it.toString().trim() }
+    fun onNameChanged(name: Editable?) {
+        name?.let { this.name = it.toString() }
     }
 
-    fun onEmailChanged(email: CharSequence?) {
-        email?.let { this.email = it.toString().trim() }
+    fun onEmailChanged(email: Editable?) {
+        email?.let { this.email = it.toString() }
     }
 
-    fun onPasswordChanged(password: CharSequence?) {
+    fun onPasswordChanged(password: Editable?) {
         password?.let { this.password = it.toString() }
     }
 
-    fun nameIsValid() = name.isNotEmpty()
+    fun isNameValid() = name.isNotEmpty()
 
-    fun emailIsValid() = Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    fun isEmailValid() = Patterns.EMAIL_ADDRESS.matcher(email).matches()
 
-    fun passwordIsValid() = password.length >= PASSWORD_MIN_LENGTH
+    fun isPasswordValid() = password.length >= PASSWORD_MIN_LENGTH
 
     fun signUp() {
         viewModelScope.launch {

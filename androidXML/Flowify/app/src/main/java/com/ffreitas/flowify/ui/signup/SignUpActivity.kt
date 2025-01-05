@@ -9,7 +9,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.widget.doOnTextChanged
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -67,23 +67,23 @@ class SignUpActivity : AppCompatActivity() {
 
         layout
             .inputName
-            .doOnTextChanged { text, _, _, _ ->
-                layout.inputName.error = null
-                model.onNameChanged(text)
+            .doAfterTextChanged {
+                layout.inputLayoutName.error = null
+                model.onNameChanged(it)
             }
 
         layout
             .inputEmail
-            .doOnTextChanged { text, _, _, _ ->
-                layout.inputEmail.error = null
-                model.onEmailChanged(text)
+            .doAfterTextChanged {
+                layout.inputLayoutEmail.error = null
+                model.onEmailChanged(it)
             }
 
         layout
             .inputPassword
-            .doOnTextChanged { text, _, _, _ ->
-                layout.inputPassword.error = null
-                model.onPasswordChanged(text)
+            .doAfterTextChanged {
+                layout.inputLayoutPassword.error = null
+                model.onPasswordChanged(it)
             }
 
         layout
@@ -151,32 +151,29 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun hasFormValid(): Boolean {
-        return when {
-            !model.nameIsValid() -> {
-                layout.inputName.error = getString(R.string.signup_screen_name_invalid)
-                false
-            }
+        var isValid = true
 
-            !model.emailIsValid() -> {
-                layout.inputEmail.error = getString(R.string.signup_screen_email_invalid)
-                false
-            }
-
-            !model.passwordIsValid() -> {
-                layout.inputPassword.error = getString(R.string.signup_screen_password_invalid)
-                false
-            }
-
-            else -> true
+        if (!model.isNameValid()) {
+            layout.inputLayoutName.error = getString(R.string.signup_screen_name_invalid)
+            isValid = false
         }
+
+        if (!model.isEmailValid()) {
+            layout.inputLayoutEmail.error = getString(R.string.signup_screen_email_invalid)
+            isValid = false
+        }
+
+        if (!model.isPasswordValid()) {
+            layout.inputLayoutPassword.error = getString(R.string.signup_screen_password_invalid)
+            isValid = false
+        }
+
+        return isValid
     }
 
     private fun onClickSubmit() {
         Log.d(TAG, "submit clicked")
-        if (!hasFormValid()) {
-            handleErrorMessage(R.string.signup_screen_submit_error)
-            return
-        }
+        if (!hasFormValid()) return
         model.signUp()
     }
 

@@ -1,6 +1,5 @@
 package com.ffreitas.flowify.data.network.auth
 
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -8,26 +7,21 @@ import kotlinx.coroutines.tasks.await
 
 class DefaultFirebaseAuthService(private val service: FirebaseAuth) : FirebaseAuthService {
 
-    override suspend fun signUp(
-        name: String,
-        email: String,
-        password: String
-    ): FirebaseUser? {
+    override suspend fun signUp(name: String, email: String, password: String): FirebaseUser? {
         val result = service
             .createUserWithEmailAndPassword(email, password)
             .await()
 
-        if (result == null || result.user == null) {
-            Log.e(TAG, "Failed to sign up")
-            return null
+        checkNotNull(result) { "Failed to create an user" }
+
+        result.user?.let { user ->
+            val request = UserProfileChangeRequest
+                .Builder()
+                .setDisplayName(name)
+                .build()
+            user.updateProfile(request).await()
         }
 
-        val request = UserProfileChangeRequest
-            .Builder()
-            .setDisplayName(name)
-            .build()
-
-        result.user?.updateProfile(request)?.await()
         return result.user
     }
 
@@ -36,10 +30,7 @@ class DefaultFirebaseAuthService(private val service: FirebaseAuth) : FirebaseAu
             .signInWithEmailAndPassword(email, password)
             .await()
 
-        if (result == null || result.user == null) {
-            Log.e(TAG, "Failed to sign in")
-            return null
-        }
+        checkNotNull(result) { "Failed to sign in" }
 
         return result.user
     }
@@ -47,9 +38,4 @@ class DefaultFirebaseAuthService(private val service: FirebaseAuth) : FirebaseAu
     override fun signOut() = service.signOut()
 
     override fun getCurrentUser(): FirebaseUser? = service.currentUser
-
-    companion object {
-        private const val TAG = "DefaultFirebaseAuthService"
-
-    }
 }

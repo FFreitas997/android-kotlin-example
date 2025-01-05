@@ -42,4 +42,8 @@
     <string name="account_fragment_image_error">An error occurred while saving the profile picture.</string>
     <string name="home_activity_user_error">An error occurred while getting the current user information</string>
     <string name="account_fragment_file_error">An error occurred while getting an image for profile</string>
+    <string name="custom_alert_dialog_title">Are you sure ?</string>
+    <string name="custom_alert_dialog_subtitle">Do you really want to go back ?</string>
+    <string name="custom_alert_dialog_button_positive">Yes</string>
+    <string name="custom_alert_dialog_button_negative">No</string>
 </resources>

@@ -11,20 +11,33 @@ class DefaultStorageService(private val service: FirebaseStorage) : StorageServi
 
     private val reference = service.reference
 
-    override suspend fun uploadFile(file: File): Uri? {
-        val fileReference = reference.child("images/${file.name}")
+    override suspend fun uploadFile(file: File, type: ResourceType): Uri? {
+        val resourcePath = when (type) {
+            ResourceType.PROFILE_IMAGE -> "profile_images"
+        }
+
+        val fileReference = reference.child("resources/$resourcePath/${file.name}")
         val stream = FileInputStream(file)
 
+        val resourceContentType = when (type) {
+            ResourceType.PROFILE_IMAGE -> "image/jpg"
+        }
         fileReference
-            .putStream(stream, storageMetadata { contentType = "image/jpg" })
+            .putStream(stream, storageMetadata { contentType = resourceContentType })
             .await()
 
         return fileReference.downloadUrl.await()
     }
 
     override suspend fun deleteFile(uri: Uri): Boolean {
-        val fileReference = service.getReferenceFromUrl(uri.toString())
-        fileReference.delete().await()
+        service
+            .getReferenceFromUrl(uri.toString())
+            .delete()
+            .await()
         return true
     }
+}
+
+enum class ResourceType {
+    PROFILE_IMAGE
 }

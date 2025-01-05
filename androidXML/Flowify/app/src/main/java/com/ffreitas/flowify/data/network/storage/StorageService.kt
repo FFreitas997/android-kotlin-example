@@ -5,7 +5,7 @@ import java.io.File
 
 interface StorageService {
 
-    suspend fun uploadFile(file: File): Uri?
+    suspend fun uploadFile(file: File, type: ResourceType): Uri?
 
     suspend fun deleteFile(uri: Uri): Boolean
 }

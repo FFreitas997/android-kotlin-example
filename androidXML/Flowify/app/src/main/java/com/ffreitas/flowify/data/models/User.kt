@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class User(
+
     @SerialName("id")
     val id: String = "",
 
@@ -18,5 +19,6 @@ data class User(
     var picture: String = "",
 
     @SerialName("mobile")
-    var mobile: Long = 0,
+    var mobile: Long = 0
+
 )

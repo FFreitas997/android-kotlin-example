@@ -2,6 +2,7 @@ package com.ffreitas.flowify.ui.home.components.account
 
 import android.content.Context
 import android.net.Uri
+import android.text.Editable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -30,8 +31,8 @@ class AccountViewModel(
 
     private var currentUser: User = User()
 
-    private val _uiState = MutableStateFlow<UIState>(UIState.None)
-    val uiState: StateFlow<UIState> = _uiState.asStateFlow()
+    private val _state = MutableStateFlow<UIState>(UIState.None)
+    val state: StateFlow<UIState> = _state.asStateFlow()
 
     private var name: String = ""
     private var phone: String = ""
@@ -39,12 +40,12 @@ class AccountViewModel(
 
     private var currentImageFile: File? = null
 
-    fun handleChangeName(name: CharSequence?) {
-        name?.let { this.name = it.toString().trim() }
+    fun handleChangeName(name: Editable?) {
+        name?.let { this.name = it.toString() }
     }
 
-    fun handleChangePhone(phone: CharSequence?) {
-        phone?.let { this.phone = it.toString().trim() }
+    fun handleChangePhone(phone: Editable?) {
+        phone?.let { this.phone = it.toString() }
     }
 
     fun handlePictureSelection(context: Context, uri: Uri) {
@@ -61,7 +62,7 @@ class AccountViewModel(
                     }
                 currentImageFile = file
             } catch (e: Exception) {
-                _uiState.value = UIState.FileError(e.message ?: "Failed to load image")
+                _state.value = UIState.FileError(e.message ?: "Failed to load image")
             }
         }
     }
@@ -78,7 +79,7 @@ class AccountViewModel(
     }
 
     private suspend fun handleSelectedImage(currentFile: File) {
-        val newURI = storageRepository.uploadFile(currentFile)
+        val newURI = storageRepository.uploadProfilePicture(currentFile)
         checkNotNull(newURI) { "Failed to upload new profile picture" }
         if (currentUser.picture.isNotEmpty())
             storageRepository.deleteFile(Uri.parse(currentUser.picture))
@@ -88,7 +89,7 @@ class AccountViewModel(
     fun updateUserInformation() {
         viewModelScope.launch {
             try {
-                _uiState.value = UIState.Loading
+                _state.value = UIState.Loading
                 if (!isNameValid() || !isPhoneValid())
                     throw Exception("Invalid name or phone number")
                 if (currentUser.id.isEmpty())
@@ -98,9 +99,9 @@ class AccountViewModel(
                 currentImageFile?.let { file -> handleSelectedImage(file) }
                 if (!userRepository.updateUser(currentUser))
                     throw Exception("Failed to update user information")
-                _uiState.value = UIState.Success
+                _state.value = UIState.Success
             } catch (e: Exception) {
-                _uiState.value = UIState.Error(e.message ?: "An error occurred")
+                _state.value = UIState.Error(e.message ?: "An error occurred")
             }
         }
     }

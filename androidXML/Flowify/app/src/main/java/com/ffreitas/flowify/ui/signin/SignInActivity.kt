@@ -9,7 +9,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.widget.doOnTextChanged
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -68,15 +68,15 @@ class SignInActivity : AppCompatActivity() {
 
         layout
             .inputEmail
-            .doOnTextChanged { text, _, _, _ ->
-                layout.inputEmail.error = null
-                model.onEmailChanged(text)
+            .doAfterTextChanged {
+                layout.inputEmailLayout.error = null
+                model.onEmailChanged(it)
             }
 
         layout.inputPassword
-            .doOnTextChanged { text, _, _, _ ->
-                layout.inputPassword.error = null
-                model.onPasswordChanged(text)
+            .doAfterTextChanged {
+                layout.inputPasswordLayout.error = null
+                model.onPasswordChanged(it)
             }
 
         layout.buttonSignIn.setOnClickListener { onClickSubmit() }
@@ -141,27 +141,24 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun hasFormValid(): Boolean {
-        return when {
-            !model.emailIsValid() -> {
-                layout.inputEmail.error = getString(R.string.signin_screen_email_invalid)
-                false
-            }
+        var isValid = true
 
-            !model.passwordIsValid() -> {
-                layout.inputPassword.error = getString(R.string.signin_screen_password_invalid)
-                false
-            }
-
-            else -> true
+        if (!model.isEmailValid()) {
+            layout.inputEmailLayout.error = getString(R.string.signin_screen_email_invalid)
+            isValid = false
         }
+
+        if (!model.isPasswordValid()) {
+            layout.inputPasswordLayout.error = getString(R.string.signin_screen_password_invalid)
+            isValid = false
+        }
+
+        return isValid
     }
 
     private fun onClickSubmit() {
         Log.d(TAG, "submit clicked")
-        if (!hasFormValid()) {
-            handleErrorMessage(R.string.signin_screen_submit_error)
-            return
-        }
+        if (!hasFormValid()) return
         model.signIn()
     }
 

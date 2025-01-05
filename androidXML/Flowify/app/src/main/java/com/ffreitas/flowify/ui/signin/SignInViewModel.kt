@@ -1,5 +1,6 @@
 package com.ffreitas.flowify.ui.signin
 
+import android.text.Editable
 import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
@@ -26,17 +27,17 @@ class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() 
     val state: StateFlow<UIState> = _state.asStateFlow()
 
 
-    fun onEmailChanged(email: CharSequence?) {
-        email?.let { this.email = it.toString().trim() }
+    fun onEmailChanged(email: Editable?) {
+        email?.let { this.email = it.toString() }
     }
 
-    fun onPasswordChanged(password: CharSequence?) {
+    fun onPasswordChanged(password: Editable?) {
         password?.let { this.password = it.toString() }
     }
 
-    fun emailIsValid() = Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    fun isEmailValid() = Patterns.EMAIL_ADDRESS.matcher(email).matches()
 
-    fun passwordIsValid() = password.length >= PASSWORD_MIN_LENGTH
+    fun isPasswordValid() = password.length >= PASSWORD_MIN_LENGTH
 
     fun signIn() {
         viewModelScope.launch {

@@ -38,4 +38,8 @@
     <string name="account_fragment_image_error">Ocorreu um erro ao salvar a foto do perfil.</string>
     <string name="home_activity_user_error">Ocorreu um erro ao obter as informações do utilizador</string>
     <string name="account_fragment_file_error">Ocorreu um erro ao obter uma imagem para o perfil</string>
+    <string name="custom_alert_dialog_subtitle">Quer mesmo voltar atrás ?</string>
+    <string name="custom_alert_dialog_button_positive">SIm</string>
+    <string name="custom_alert_dialog_button_negative">Não</string>
+    <string name="custom_alert_dialog_title">Tem a certeza ?</string>
 </resources>

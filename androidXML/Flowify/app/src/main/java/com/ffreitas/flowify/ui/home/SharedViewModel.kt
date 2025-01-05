@@ -24,6 +24,8 @@ class SharedViewModel(
     private val _state = MutableStateFlow<UIState>(UIState.None)
     val state: StateFlow<UIState> = _state.asStateFlow()
 
+    init { getCurrentUser() }
+
     fun getCurrentUser() {
         viewModelScope.launch {
             try {
