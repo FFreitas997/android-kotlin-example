@@ -1,4 +1,4 @@
-package com.ffreitas.flowify.ui.signin
+package com.ffreitas.flowify.ui.authentication.components.signup
 
 import android.content.Intent
 import android.os.Bundle
@@ -14,7 +14,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.ffreitas.flowify.R
-import com.ffreitas.flowify.databinding.ActivitySignInBinding
+import com.ffreitas.flowify.data.models.User
+import com.ffreitas.flowify.databinding.ActivitySignUpBinding
 import com.ffreitas.flowify.ui.home.HomeActivity
 import com.ffreitas.flowify.utils.BackPressedCallback
 import com.ffreitas.flowify.utils.ProgressDialog
@@ -23,25 +24,23 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 
-class SignInActivity : AppCompatActivity() {
+class SignUpActivity : AppCompatActivity() {
 
     private lateinit var progressDialog: ProgressDialog
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
-    private var _layout: ActivitySignInBinding? = null
+    private var _layout: ActivitySignUpBinding? = null
     private val layout get() = _layout!!
-
-    private val model: SignInViewModel by viewModels { SignInViewModel.Factory }
+    private val model: SignUpViewModel by viewModels { SignUpViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
 
-        _layout = ActivitySignInBinding
+        _layout = ActivitySignUpBinding
             .inflate(layoutInflater)
             .also { setContentView(it.root) }
 
@@ -67,19 +66,29 @@ class SignInActivity : AppCompatActivity() {
             .setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         layout
+            .inputName
+            .doAfterTextChanged {
+                layout.inputLayoutName.error = null
+                model.onNameChanged(it)
+            }
+
+        layout
             .inputEmail
             .doAfterTextChanged {
-                layout.inputEmailLayout.error = null
+                layout.inputLayoutEmail.error = null
                 model.onEmailChanged(it)
             }
 
-        layout.inputPassword
+        layout
+            .inputPassword
             .doAfterTextChanged {
-                layout.inputPasswordLayout.error = null
+                layout.inputLayoutPassword.error = null
                 model.onPasswordChanged(it)
             }
 
-        layout.buttonSignIn.setOnClickListener { onClickSubmit() }
+        layout
+            .buttonSignUp
+            .setOnClickListener { onClickSubmit() }
 
         handleUIState()
     }
@@ -87,9 +96,10 @@ class SignInActivity : AppCompatActivity() {
     private fun handleUIState() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.state.collect { state ->
+                model.uiState.collect { state ->
                     when (state) {
                         is UIState.Loading -> progressDialog.show()
+
                         is UIState.Success -> {
                             progressDialog.dismiss()
                             handleSubmitSuccess(state.user)
@@ -110,12 +120,12 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleSubmitSuccess(user: FirebaseUser) {
-        Log.d(TAG, "sign-in success: ${user.uid}")
+    private fun handleSubmitSuccess(user: User) {
+        Log.d(TAG, "sign-up success: ${user.id}")
         firebaseAnalytics
-            .logEvent(FirebaseAnalytics.Event.LOGIN) {
+            .logEvent(FirebaseAnalytics.Event.SIGN_UP) {
                 param(FirebaseAnalytics.Param.METHOD, "email")
-                param(FirebaseAnalytics.Param.CONTENT, "user: ${user.uid}")
+                param(FirebaseAnalytics.Param.CONTENT, "user: ${user.id}")
             }
         Intent(this, HomeActivity::class.java)
             .also { startActivity(it) }
@@ -123,13 +133,13 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun handleSubmitError(message: String) {
-        Log.e(TAG, "sign-in error: $message")
+        Log.e(TAG, "sign-up error: $message")
         firebaseAnalytics
-            .logEvent(FirebaseAnalytics.Event.LOGIN) {
+            .logEvent(FirebaseAnalytics.Event.SIGN_UP) {
                 param(FirebaseAnalytics.Param.CONTENT_TYPE, "error")
                 param(FirebaseAnalytics.Param.CONTENT, message)
             }
-        handleErrorMessage(R.string.signin_screen_submit_error)
+        handleErrorMessage(R.string.signup_screen_submit_error)
     }
 
     private fun handleErrorMessage(@StringRes message: Int) {
@@ -143,13 +153,18 @@ class SignInActivity : AppCompatActivity() {
     private fun hasFormValid(): Boolean {
         var isValid = true
 
+        if (!model.isNameValid()) {
+            layout.inputLayoutName.error = getString(R.string.signup_screen_name_invalid)
+            isValid = false
+        }
+
         if (!model.isEmailValid()) {
-            layout.inputEmailLayout.error = getString(R.string.signin_screen_email_invalid)
+            layout.inputLayoutEmail.error = getString(R.string.signup_screen_email_invalid)
             isValid = false
         }
 
         if (!model.isPasswordValid()) {
-            layout.inputPasswordLayout.error = getString(R.string.signin_screen_password_invalid)
+            layout.inputLayoutPassword.error = getString(R.string.signup_screen_password_invalid)
             isValid = false
         }
 
@@ -159,7 +174,7 @@ class SignInActivity : AppCompatActivity() {
     private fun onClickSubmit() {
         Log.d(TAG, "submit clicked")
         if (!hasFormValid()) return
-        model.signIn()
+        model.signUp()
     }
 
     override fun onDestroy() {
@@ -168,6 +183,6 @@ class SignInActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val TAG = "SignInActivity"
+        private const val TAG = "SignUpActivity"
     }
 }

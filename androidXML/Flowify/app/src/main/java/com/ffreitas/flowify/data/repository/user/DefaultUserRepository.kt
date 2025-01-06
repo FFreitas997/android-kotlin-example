@@ -25,5 +25,13 @@ class DefaultUserRepository(
         }
 
     override suspend fun updateUser(user: User): Boolean =
-        withContext(dispatcher) { firestore.storeUser(user) }
+        withContext(dispatcher) {
+            require(user.id.isNotEmpty()) { "User id cannot be empty" }
+            val fields = mapOf(
+                "name" to user.name,
+                "picture" to user.picture,
+                "mobile" to user.mobile
+            )
+            firestore.updateUser(user.id, fields)
+        }
 }

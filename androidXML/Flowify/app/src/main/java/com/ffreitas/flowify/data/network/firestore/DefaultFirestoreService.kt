@@ -18,6 +18,17 @@ class DefaultFirestoreService(private val service: FirebaseFirestore) : Firestor
         return true
     }
 
+    override suspend fun updateUser(id: String, fields: Map<String, Any>): Boolean {
+        require(fields.isNotEmpty()) { "Fields cannot be empty" }
+        require(id.isNotEmpty()) { "User id cannot be empty" }
+        service
+            .collection(USER_COLLECTION)
+            .document(id)
+            .update(fields)
+            .await()
+        return true
+    }
+
     override suspend fun getUser(email: String): User? {
         val snapshot = service
             .collection(USER_COLLECTION)

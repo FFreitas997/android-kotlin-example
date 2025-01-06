@@ -20,8 +20,8 @@ import androidx.core.view.WindowInsetsCompat
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.databinding.ActivityAuthenticationBinding
 import com.ffreitas.flowify.ui.home.HomeActivity
-import com.ffreitas.flowify.ui.signin.SignInActivity
-import com.ffreitas.flowify.ui.signup.SignUpActivity
+import com.ffreitas.flowify.ui.authentication.components.signin.SignInActivity
+import com.ffreitas.flowify.ui.authentication.components.signup.SignUpActivity
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
 import com.ffreitas.flowify.utils.Constants.SPLASH_SCREEN_DELAY
 
