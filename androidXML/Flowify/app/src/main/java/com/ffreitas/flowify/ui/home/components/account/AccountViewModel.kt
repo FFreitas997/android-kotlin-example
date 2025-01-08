@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -31,8 +32,8 @@ class AccountViewModel(
 
     private var currentUser: User = User()
 
-    private val _state = MutableStateFlow<UIState>(UIState.None)
-    val state: StateFlow<UIState> = _state.asStateFlow()
+    private val _state = MutableStateFlow<AccountUIState?>(null)
+    val state: StateFlow<AccountUIState?> = _state.asStateFlow()
 
     private var name: String = ""
     private var phone: String = ""
@@ -62,7 +63,7 @@ class AccountViewModel(
                     }
                 currentImageFile = file
             } catch (e: Exception) {
-                _state.value = UIState.FileError(e.message ?: "Failed to load image")
+                _state.update { AccountUIState.FileError(e.message ?: "Failed to load image") }
             }
         }
     }
@@ -80,7 +81,6 @@ class AccountViewModel(
 
     private suspend fun handleSelectedImage(currentFile: File) {
         val newURI = storageRepository.uploadProfilePicture(currentFile)
-        checkNotNull(newURI) { "Failed to upload new profile picture" }
         if (currentUser.picture.isNotEmpty())
             storageRepository.deleteFile(Uri.parse(currentUser.picture))
         currentUser.picture = newURI.toString()
@@ -89,7 +89,7 @@ class AccountViewModel(
     fun updateUserInformation() {
         viewModelScope.launch {
             try {
-                _state.value = UIState.Loading
+                _state.update { AccountUIState.Loading }
                 if (!isNameValid() || !isPhoneValid())
                     throw Exception("Invalid name or phone number")
                 if (currentUser.id.isEmpty())
@@ -97,11 +97,14 @@ class AccountViewModel(
                 currentUser.name = name
                 currentUser.mobile = phone.toLong()
                 currentImageFile?.let { file -> handleSelectedImage(file) }
-                if (!userRepository.updateUser(currentUser))
-                    throw Exception("Failed to update user information")
-                _state.value = UIState.Success
+                userRepository.updateUser(currentUser)
+                _state.update { AccountUIState.Success }
             } catch (e: Exception) {
-                _state.value = UIState.Error(e.message ?: "An error occurred")
+                _state.update {
+                    AccountUIState.Error(
+                        e.message ?: "Failed to update user information"
+                    )
+                }
             }
         }
     }
@@ -112,19 +115,18 @@ class AccountViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
                 val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
-                val storeRepository = DefaultUserRepository(application.firestore)
-                val storage = DefaultStorageRepository(application.storage)
+                val userRepository = DefaultUserRepository(application.userStorage)
+                val storage = DefaultStorageRepository(application.resourceStorage)
 
-                return AccountViewModel(storeRepository, storage) as T
+                return AccountViewModel(userRepository, storage) as T
             }
         }
     }
 }
 
-sealed class UIState {
-    data object Loading : UIState()
-    data object None : UIState()
-    data object Success : UIState()
-    data class Error(val message: String) : UIState()
-    data class FileError(val message: String) : UIState()
+sealed interface AccountUIState {
+    data object Loading : AccountUIState
+    data object Success : AccountUIState
+    data class Error(val message: String) : AccountUIState
+    data class FileError(val message: String) : AccountUIState
 }

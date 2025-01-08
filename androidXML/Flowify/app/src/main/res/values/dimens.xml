@@ -24,4 +24,7 @@
     <dimen name="account_fragment_card_corner_radius">20dp</dimen>
     <dimen name="account_fragment_card_elevation">10dp</dimen>
     <dimen name="account_fragment_image_size">150dp</dimen>
+    <dimen name="create_board_activity_card_corner_radius">16dp</dimen>
+    <dimen name="create_board_activity_card_elevation">10dp</dimen>
+    <dimen name="create_board_activity_image_size">100dp</dimen>
 </resources>

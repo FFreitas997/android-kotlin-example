@@ -23,7 +23,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 
 class SignInActivity : AppCompatActivity() {
@@ -89,33 +88,31 @@ class SignInActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 model.state.collect { state ->
                     when (state) {
-                        is UIState.Loading -> progressDialog.show()
-                        is UIState.Success -> {
+                        is SignInUIState.Loading -> progressDialog.show()
+
+                        is SignInUIState.Success -> {
                             progressDialog.dismiss()
-                            handleSubmitSuccess(state.user)
+                            handleSubmitSuccess(state.data)
                         }
 
-                        is UIState.Error -> {
+                        is SignInUIState.Error -> {
                             progressDialog.dismiss()
                             handleSubmitError(state.message)
                         }
 
-                        else -> {
-                            progressDialog.dismiss()
-                            Log.d(TAG, "State not handled")
-                        }
+                       else -> Unit
                     }
                 }
             }
         }
     }
 
-    private fun handleSubmitSuccess(user: FirebaseUser) {
-        Log.d(TAG, "sign-in success: ${user.uid}")
+    private fun handleSubmitSuccess(userID: String) {
+        Log.d(TAG, "sign-in success: $userID")
         firebaseAnalytics
             .logEvent(FirebaseAnalytics.Event.LOGIN) {
                 param(FirebaseAnalytics.Param.METHOD, "email")
-                param(FirebaseAnalytics.Param.CONTENT, "user: ${user.uid}")
+                param(FirebaseAnalytics.Param.CONTENT, "user: $userID")
             }
         Intent(this, HomeActivity::class.java)
             .also { startActivity(it) }

@@ -1,7 +1,6 @@
 package com.ffreitas.flowify.ui.authentication.components.signup
 
 import android.text.Editable
-import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +17,7 @@ import com.ffreitas.flowify.utils.Constants.PASSWORD_MIN_LENGTH
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SignUpViewModel(
@@ -29,8 +29,8 @@ class SignUpViewModel(
     private var email = ""
     private var password = ""
 
-    private val _uiState: MutableStateFlow<UIState> = MutableStateFlow(UIState.None)
-    val uiState: StateFlow<UIState> = _uiState.asStateFlow()
+    private val _state: MutableStateFlow<SignUpUIState<String>?> = MutableStateFlow(null)
+    val state: StateFlow<SignUpUIState<String>?> = _state.asStateFlow()
 
     fun onNameChanged(name: Editable?) {
         name?.let { this.name = it.toString() }
@@ -53,7 +53,7 @@ class SignUpViewModel(
     fun signUp() {
         viewModelScope.launch {
             try {
-                _uiState.value = UIState.Loading
+                _state.update { SignUpUIState.Loading }
 
                 val result = authRepository.signUp(name, email, password)
 
@@ -65,26 +65,23 @@ class SignUpViewModel(
                     email = result.email ?: ""
                 )
 
-                if (!userRepository.createUser(user))
-                    throw Exception("Failed to store user with id ${user.id}")
+                userRepository.createUser(user)
 
-                _uiState.value = UIState.Success(user)
+                _state.update { SignUpUIState.Success(user.id) }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to sign up user with email $email", e)
-                _uiState.value = UIState.Error(e.message ?: "Failed to sign up")
+                _state.update { SignUpUIState.Error(e.message ?: "Failed to sign up user") }
             }
         }
     }
 
     companion object {
-        private const val TAG = "SignUpViewModel"
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
 
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
                 val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
                 val authRepository = DefaultAuthRepository(application.authentication)
-                val userRepository = DefaultUserRepository(application.firestore)
+                val userRepository = DefaultUserRepository(application.userStorage)
 
                 return SignUpViewModel(authRepository, userRepository) as T
             }
@@ -92,9 +89,8 @@ class SignUpViewModel(
     }
 }
 
-sealed class UIState {
-    data object None : UIState()
-    data object Loading : UIState()
-    data class Success(val user: User) : UIState()
-    data class Error(val message: String) : UIState()
+sealed interface SignUpUIState<out S> {
+    data object Loading : SignUpUIState<Nothing>
+    data class Success<S>(val data: S) : SignUpUIState<S>
+    data class Error(val message: String) : SignUpUIState<Nothing>
 }

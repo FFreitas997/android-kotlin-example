@@ -1,43 +1,35 @@
 package com.ffreitas.flowify.data.network.storage
 
 import android.net.Uri
+import android.webkit.MimeTypeMap
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storageMetadata
 import kotlinx.coroutines.tasks.await
 import java.io.File
-import java.io.FileInputStream
 
 class DefaultStorageService(private val service: FirebaseStorage) : StorageService {
 
     private val reference = service.reference
 
-    override suspend fun uploadFile(file: File, type: ResourceType): Uri? {
-        val resourcePath = when (type) {
-            ResourceType.PROFILE_IMAGE -> "profile_images"
-        }
+    override suspend fun upload(resource: File, resourcePath: String): Uri {
+        val childReference = reference.child("$resourcePath/${resource.name}")
 
-        val fileReference = reference.child("resources/$resourcePath/${file.name}")
-        val stream = FileInputStream(file)
-
-        val resourceContentType = when (type) {
-            ResourceType.PROFILE_IMAGE -> "image/jpg"
-        }
-        fileReference
-            .putStream(stream, storageMetadata { contentType = resourceContentType })
+        childReference
+            .putFile(Uri.fromFile(resource), storageMetadata { contentType = getContentType(resource) })
             .await()
 
-        return fileReference.downloadUrl.await()
+        return childReference.downloadUrl.await()
     }
 
-    override suspend fun deleteFile(uri: Uri): Boolean {
+    override suspend fun delete(uri: Uri) {
         service
             .getReferenceFromUrl(uri.toString())
             .delete()
             .await()
-        return true
     }
-}
 
-enum class ResourceType {
-    PROFILE_IMAGE
+    private fun getContentType(file: File): String {
+        val extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString())
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)!!
+    }
 }

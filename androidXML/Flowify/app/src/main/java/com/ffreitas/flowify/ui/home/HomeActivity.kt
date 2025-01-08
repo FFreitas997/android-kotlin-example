@@ -1,15 +1,11 @@
 package com.ffreitas.flowify.ui.home
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.View.OnClickListener
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -30,25 +26,18 @@ import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.ActivityHomeBinding
 import com.ffreitas.flowify.ui.authentication.AuthenticationActivity
-import com.ffreitas.flowify.utils.Constants.APPLICATION_PREFERENCE_NAME
+import com.ffreitas.flowify.ui.home.components.board.create.CreateBoardActivity
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
-import com.ffreitas.flowify.utils.Constants.USER_PREFERENCE_NAME
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 
-class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListener {
+class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityHomeBinding
     private val model: SharedViewModel by viewModels { SharedViewModel.Factory }
-    private val json = Json { ignoreUnknownKeys = true }
-
-    private val sharedPreferences: SharedPreferences by lazy {
-        getSharedPreferences(APPLICATION_PREFERENCE_NAME, MODE_PRIVATE)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +48,7 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
         setSupportActionBar(binding.appBarHome.toolbar)
         binding.appBarHome.toolbar.setOnMenuItemClickListener(this)
 
-        binding.appBarHome.fab.setOnClickListener(this)
+        binding.appBarHome.fab.setOnClickListener { handleCreateButton()}
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_home)
@@ -67,13 +56,17 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
         // menu should be considered as top level destinations.
         appBarConfiguration =
             AppBarConfiguration(
-                setOf(R.id.nav_home, R.id.nav_account),
+                setOf(R.id.nav_boards, R.id.nav_account),
                 drawerLayout
             )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
         handleUIState()
+    }
+
+    private fun handleCreateButton() {
+        Intent(this, CreateBoardActivity::class.java)
+            .also { startActivity(it) }
     }
 
     private fun handleUIState() {
@@ -81,19 +74,17 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 model.state.collect { state ->
                     when (state) {
-                        is UIState.Success -> {
-                            Log.d(TAG, "User found with email: ${state.user.email}")
-                            updateUserInformation(state.user)
+                        is HomeUIState.Success -> {
+                            Log.d(TAG, "User found with email: ${state.data.email}")
+                            updateUserInformation(state.data)
                         }
 
-                        is UIState.Error -> {
+                        is HomeUIState.Error -> {
                             Log.d(TAG, "Error occurred: ${state.message}")
                             handleErrorMessage(R.string.home_activity_user_error)
                         }
 
-                        else -> {
-                            Log.d(TAG, "State not handled")
-                        }
+                        else -> Unit
                     }
                 }
             }
@@ -154,11 +145,6 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
                 findViewById<TextView>(R.id.account_name)
                     .apply { text = user.name }
         }
-
-        val encoded = json.encodeToString(User.serializer(), user)
-        sharedPreferences
-            .edit()
-            .putString(USER_PREFERENCE_NAME, encoded).apply()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -170,14 +156,6 @@ class HomeActivity : AppCompatActivity(), OnClickListener, OnMenuItemClickListen
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_home)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    override fun onClick(view: View) {
-        when (view.id) {
-            R.id.fab -> Toast
-                .makeText(this, "Fab clicked", Toast.LENGTH_SHORT)
-                .show()
-        }
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {

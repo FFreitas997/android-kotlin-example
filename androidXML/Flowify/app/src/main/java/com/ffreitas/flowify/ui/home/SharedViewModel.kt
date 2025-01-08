@@ -14,6 +14,7 @@ import com.ffreitas.flowify.data.repository.user.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SharedViewModel(
@@ -21,8 +22,10 @@ class SharedViewModel(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<UIState>(UIState.None)
-    val state: StateFlow<UIState> = _state.asStateFlow()
+    private val _state: MutableStateFlow<HomeUIState<User>?> = MutableStateFlow(null)
+    val state: StateFlow<HomeUIState<User>?> = _state.asStateFlow()
+
+    var currentUser: User? = null
 
     init { getCurrentUser() }
 
@@ -30,12 +33,11 @@ class SharedViewModel(
         viewModelScope.launch {
             try {
                 val result = userRepository.getCurrentUser()
-
                 checkNotNull(result) { "User not found" }
-
-                _state.value = UIState.Success(result)
+                currentUser = result
+                _state.update { HomeUIState.Success(result) }
             } catch (e: Exception) {
-                _state.value = UIState.Error(e.message ?: "An error occurred")
+                _state.update { HomeUIState.Error(e.message ?: "Failed to get user") }
             }
         }
     }
@@ -49,7 +51,7 @@ class SharedViewModel(
                 val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
                 val authRepository = DefaultAuthRepository(application.authentication)
                 val userRepository = DefaultUserRepository(
-                    firestore = application.firestore,
+                    firestore = application.userStorage,
                     authentication = application.authentication
                 )
                 return SharedViewModel(authRepository, userRepository) as T
@@ -58,8 +60,7 @@ class SharedViewModel(
     }
 }
 
-sealed class UIState {
-    data object None : UIState()
-    data class Success(val user: User) : UIState()
-    data class Error(val message: String) : UIState()
+sealed interface HomeUIState<out S> {
+    data class Success<S>(val data: S) : HomeUIState<S>
+    data class Error(val message: String) : HomeUIState<Nothing>
 }

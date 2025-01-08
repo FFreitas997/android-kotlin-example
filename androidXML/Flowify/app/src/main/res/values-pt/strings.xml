@@ -8,8 +8,8 @@
     <string name="signup_screen_email_hint">Por favor insira seu e-mail</string>
     <string name="signup_screen_name_hint">Por favor digite seu nome</string>
     <string name="signup_screen_title">Digite seu nome, e-mail e senha para se registrar conosco</string>
-    <string name="signup_screen_password_invalid">A password é mandatório e tem de ter no mínimo 6 characteres</string>
-    <string name="signup_screen_submit_error">Ocorreu um erro ao efetuar login. Tente novamente</string>
+    <string name="signup_screen_password_invalid">A password é obrigatório e tem de ter no mínimo 6 characteres</string>
+    <string name="signup_screen_submit_error">Ocorreu um erro ao efetuar registo. Tente novamente</string>
     <string name="loading">Por favor aguarde …</string>
     <string name="signup_screen_name_invalid">O nome de utilizador é mandatório</string>
     <string name="signup_screen_email_invalid">O email de utilizador é mandatório e tem de ser válido</string>
@@ -17,7 +17,7 @@
     <string name="signin_screen_email_hint">Por favor insira seu e-mail</string>
     <string name="signin_screen_password_hint">Por favor digite sua senha</string>
     <string name="signin_screen_email_invalid">O email de utilizador é mandatório e tem de ser válido</string>
-    <string name="signin_screen_password_invalid">A password é mandatório e tem de ter no mínimo 6 characteres</string>
+    <string name="signin_screen_password_invalid">A password é obrigatório e tem de ter no mínimo 6 characteres</string>
     <string name="menu_home">Inicial</string>
     <string name="sign_out">Sair</string>
     <string name="sign_out_alert_dialog_message">Tem certeza de que deseja sair?</string>
@@ -39,7 +39,17 @@
     <string name="home_activity_user_error">Ocorreu um erro ao obter as informações do utilizador</string>
     <string name="account_fragment_file_error">Ocorreu um erro ao obter uma imagem para o perfil</string>
     <string name="custom_alert_dialog_subtitle">Quer mesmo voltar atrás ?</string>
-    <string name="custom_alert_dialog_button_positive">SIm</string>
+    <string name="custom_alert_dialog_button_positive">Sim</string>
     <string name="custom_alert_dialog_button_negative">Não</string>
     <string name="custom_alert_dialog_title">Tem a certeza ?</string>
+    <string name="create_board_activity_toolbar_title">Criar quadro</string>
+    <string name="create_board_activity_name">Nome do quadro</string>
+    <string name="create_board_activity_button">Criar</string>
+    <string name="create_board_activity_invalid_name">Você deve fornecer um nome</string>
+    <string name="create_board_activity_invalid_picture">Por favor, escolha uma imagem válida para seu novo quadro</string>
+    <string name="create_board_activity_permission_required">A seleção da imagem do quadro requer permissão para selecionar uma imagem da galeria do seu telefone. Habilite a permissão nas configurações do seu telefone</string>
+    <string name="create_board_activity_permission_denied">Algo deu errado quando você estava escolhendo uma boa imagem para seu quadro.</string>
+    <string name="create_board_activity_error">Ocorreu um erro ao criar o quadro. Verifique suas informações.</string>
+    <string name="account_fragment_user_error">Utilizador não encontrado. Por favor, faça login.</string>
+    <string name="menu_boards">Quadros</string>
 </resources>

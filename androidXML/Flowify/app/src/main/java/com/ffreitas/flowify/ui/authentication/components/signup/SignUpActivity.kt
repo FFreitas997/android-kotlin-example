@@ -14,7 +14,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.ffreitas.flowify.R
-import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.ActivitySignUpBinding
 import com.ffreitas.flowify.ui.home.HomeActivity
 import com.ffreitas.flowify.utils.BackPressedCallback
@@ -96,36 +95,33 @@ class SignUpActivity : AppCompatActivity() {
     private fun handleUIState() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.uiState.collect { state ->
+                model.state.collect { state ->
                     when (state) {
-                        is UIState.Loading -> progressDialog.show()
+                        is SignUpUIState.Loading -> progressDialog.show()
 
-                        is UIState.Success -> {
+                        is SignUpUIState.Success -> {
                             progressDialog.dismiss()
-                            handleSubmitSuccess(state.user)
+                            handleSubmitSuccess(state.data)
                         }
 
-                        is UIState.Error -> {
+                        is SignUpUIState.Error -> {
                             progressDialog.dismiss()
                             handleSubmitError(state.message)
                         }
 
-                        else -> {
-                            progressDialog.dismiss()
-                            Log.d(TAG, "State not handled")
-                        }
+                        else -> Unit
                     }
                 }
             }
         }
     }
 
-    private fun handleSubmitSuccess(user: User) {
-        Log.d(TAG, "sign-up success: ${user.id}")
+    private fun handleSubmitSuccess(userID: String) {
+        Log.d(TAG, "sign-up success: $userID")
         firebaseAnalytics
             .logEvent(FirebaseAnalytics.Event.SIGN_UP) {
                 param(FirebaseAnalytics.Param.METHOD, "email")
-                param(FirebaseAnalytics.Param.CONTENT, "user: ${user.id}")
+                param(FirebaseAnalytics.Param.CONTENT, "user: $userID")
             }
         Intent(this, HomeActivity::class.java)
             .also { startActivity(it) }

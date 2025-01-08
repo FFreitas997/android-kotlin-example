@@ -11,7 +11,7 @@
     <string name="signup_screen_name_invalid">Username is mandatory</string>
     <string name="signup_screen_email_invalid">The user email is mandatory and must be valid</string>
     <string name="signup_screen_password_invalid">The password is mandatory and must have at least 6 characters.</string>
-    <string name="signup_screen_submit_error">Something went wrong with your sign in, please try again</string>
+    <string name="signup_screen_submit_error">Something went wrong with your sign up, please try again</string>
     <string name="loading">Please wait …</string>
     <string name="signin_screen_submit_error">Something went wrong with your sign in, please try again</string>
     <string name="signin_screen_email_hint">Please enter your email</string>
@@ -42,4 +42,14 @@
     <string name="custom_alert_dialog_subtitle">Do you really want to go back ?</string>
     <string name="custom_alert_dialog_button_positive">Yes</string>
     <string name="custom_alert_dialog_button_negative">No</string>
+    <string name="create_board_activity_toolbar_title">Create Board</string>
+    <string name="create_board_activity_name">Board Name</string>
+    <string name="create_board_activity_button">Create</string>
+    <string name="create_board_activity_invalid_name">You must provide a name</string>
+    <string name="create_board_activity_invalid_picture">Please choose a valid picture for your new board</string>
+    <string name="create_board_activity_permission_required">The selection of board image required permission to select an image from your phone gallery. Please enable the permission in your phone settings</string>
+    <string name="create_board_activity_permission_denied">Something went wrong when you were picking a nice picture for your board.</string>
+    <string name="create_board_activity_error">An error occurred while creating the board. Please check your information.</string>
+    <string name="account_fragment_user_error">User not found. Please, log in.</string>
+    <string name="menu_boards">Boards</string>
 </resources>

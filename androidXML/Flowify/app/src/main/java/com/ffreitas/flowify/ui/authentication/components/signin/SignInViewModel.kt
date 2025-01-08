@@ -12,10 +12,10 @@ import com.ffreitas.flowify.FlowifyApplication
 import com.ffreitas.flowify.data.repository.auth.AuthRepository
 import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
 import com.ffreitas.flowify.utils.Constants.PASSWORD_MIN_LENGTH
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() {
@@ -23,8 +23,8 @@ class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() 
     private var email = ""
     private var password = ""
 
-    private val _state: MutableStateFlow<UIState> = MutableStateFlow(UIState.None)
-    val state: StateFlow<UIState> = _state.asStateFlow()
+    private val _state: MutableStateFlow<SignInUIState<String>?> = MutableStateFlow(null)
+    val state: StateFlow<SignInUIState<String>?> = _state.asStateFlow()
 
 
     fun onEmailChanged(email: Editable?) {
@@ -42,16 +42,16 @@ class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() 
     fun signIn() {
         viewModelScope.launch {
             try {
-                _state.value = UIState.Loading
+                _state.update { SignInUIState.Loading }
 
                 val result = authRepository.signIn(email, password)
 
                 checkNotNull(result) { "Failed to sign in user with email $email" }
 
-                _state.value = UIState.Success(result)
+                _state.update { SignInUIState.Success(result.uid) }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to sign in user with email $email", e)
-                _state.value = UIState.Error(e.message ?: "Failed to sign in user")
+                _state.update { SignInUIState.Error(e.message ?: "Failed to sign in user") }
             }
         }
     }
@@ -72,9 +72,8 @@ class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() 
     }
 }
 
-sealed class UIState {
-    data object None : UIState()
-    data object Loading : UIState()
-    data class Success(val user: FirebaseUser) : UIState()
-    data class Error(val message: String) : UIState()
+sealed interface SignInUIState<out S> {
+    data object Loading : SignInUIState<Nothing>
+    data class Success<S>(val data: S) : SignInUIState<S>
+    data class Error(val message: String) : SignInUIState<Nothing>
 }

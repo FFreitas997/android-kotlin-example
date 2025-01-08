@@ -5,7 +5,9 @@ import java.io.File
 
 interface StorageRepository {
 
-    suspend fun uploadProfilePicture(file: File): Uri?
+    suspend fun uploadProfilePicture(file: File): Uri
 
-    suspend fun deleteFile(uri: Uri): Boolean
+    suspend fun uploadBoardPicture(file: File): Uri
+
+    suspend fun deleteFile(uri: Uri)
 }

@@ -4,7 +4,6 @@ import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
 import android.annotation.SuppressLint
-import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.Uri
 import android.os.Build.VERSION
@@ -19,7 +18,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity.MODE_PRIVATE
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -32,8 +30,6 @@ import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.FragmentAccountBinding
 import com.ffreitas.flowify.ui.home.SharedViewModel
-import com.ffreitas.flowify.utils.Constants.APPLICATION_PREFERENCE_NAME
-import com.ffreitas.flowify.utils.Constants.USER_PREFERENCE_NAME
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
@@ -41,7 +37,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import java.util.Locale
 
 class AccountFragment : Fragment() {
@@ -57,12 +52,6 @@ class AccountFragment : Fragment() {
 
     private val model: AccountViewModel by viewModels { AccountViewModel.Factory }
     private val shared: SharedViewModel by activityViewModels { SharedViewModel.Factory }
-
-    private val json = Json { ignoreUnknownKeys = true }
-    private val sharedPreferences: SharedPreferences by lazy {
-        requireActivity()
-            .getSharedPreferences(APPLICATION_PREFERENCE_NAME, MODE_PRIVATE)
-    }
 
     private val activityResultPermissions =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -111,13 +100,16 @@ class AccountFragment : Fragment() {
         binding.accountButton.setOnClickListener { onSubmit() }
         binding.accountImageContainer.setOnClickListener { handleImageSelection() }
 
-        val userEncoded = sharedPreferences.getString(USER_PREFERENCE_NAME, null)
 
-        if (!userEncoded.isNullOrEmpty()) {
-            val user = json.decodeFromString(User.serializer(), userEncoded)
-            model.setCurrentUser(user)
-            updateUserUI(user)
+        val user = shared.currentUser
+        if (user == null) {
+            Log.e(TAG, "User not found.")
+            handleErrorMessage(R.string.account_fragment_user_error)
+            return root
         }
+        model.setCurrentUser(user)
+        updateUserUI(user)
+
 
         uiStateUpdate()
 
@@ -129,29 +121,27 @@ class AccountFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 model.state.collect { state ->
                     when (state) {
-                        is UIState.Loading -> {
+                        is AccountUIState.Loading -> {
                             progressDialog.show()
                         }
 
-                        is UIState.Success -> {
+                        is AccountUIState.Success -> {
                             progressDialog.dismiss()
                             handleSuccess()
                         }
 
-                        is UIState.Error -> {
+                        is AccountUIState.Error -> {
                             progressDialog.dismiss()
                             handleError(state.message)
                         }
 
-                        is UIState.FileError -> {
+                        is AccountUIState.FileError -> {
                             progressDialog.dismiss()
                             Log.e(TAG, "Failed to load image: ${state.message}")
                             handleErrorMessage(R.string.account_fragment_file_error)
                         }
 
-                        else -> {
-                            // Do nothing
-                        }
+                        else -> Unit
                     }
                 }
             }

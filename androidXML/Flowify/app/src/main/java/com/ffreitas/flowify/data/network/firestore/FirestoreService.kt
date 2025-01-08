@@ -1,12 +1,16 @@
 package com.ffreitas.flowify.data.network.firestore
 
-import com.ffreitas.flowify.data.models.User
+/**
+ * Firestore Service interface contains all CRUD operations for Firestore
+ */
 
-interface FirestoreService {
+interface FirestoreService<S> {
 
-    suspend fun storeUser(user: User): Boolean
+    suspend fun create(documentID: String, model: S)
 
-    suspend fun updateUser(id: String, fields: Map<String, Any>): Boolean
+    suspend fun read(documentID: String): S
 
-    suspend fun getUser(email: String): User?
+    suspend fun update(documentID: String, fields: Map<String, Any>)
+
+    suspend fun delete(documentID: String)
 }
