@@ -1,4 +1,4 @@
-package com.ffreitas.flowify.ui.home
+package com.ffreitas.flowify.ui.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -13,9 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -26,12 +23,11 @@ import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.ActivityHomeBinding
 import com.ffreitas.flowify.ui.authentication.AuthenticationActivity
-import com.ffreitas.flowify.ui.home.components.board.create.CreateBoardActivity
+import com.ffreitas.flowify.ui.main.components.board.create.CreateBoardActivity
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
 
 class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
 
@@ -48,7 +44,7 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
         setSupportActionBar(binding.appBarHome.toolbar)
         binding.appBarHome.toolbar.setOnMenuItemClickListener(this)
 
-        binding.appBarHome.fab.setOnClickListener { handleCreateButton()}
+        binding.appBarHome.fab.setOnClickListener { handleCreateButton() }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_home)
@@ -61,7 +57,8 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
             )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-        handleUIState()
+
+        model.state.observe(this) { handleState(it) }
     }
 
     private fun handleCreateButton() {
@@ -69,25 +66,19 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
             .also { startActivity(it) }
     }
 
-    private fun handleUIState() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.state.collect { state ->
-                    when (state) {
-                        is HomeUIState.Success -> {
-                            Log.d(TAG, "User found with email: ${state.data.email}")
-                            updateUserInformation(state.data)
-                        }
-
-                        is HomeUIState.Error -> {
-                            Log.d(TAG, "Error occurred: ${state.message}")
-                            handleErrorMessage(R.string.home_activity_user_error)
-                        }
-
-                        else -> Unit
-                    }
-                }
+    private fun handleState(state: HomeUIState<User>) {
+        when (state) {
+            is HomeUIState.Success -> {
+                Log.d(TAG, "User found with email: ${state.data.email}")
+                updateUserInformation(state.data)
             }
+
+            is HomeUIState.Error -> {
+                Log.d(TAG, "Error occurred: ${state.message}")
+                handleErrorMessage(R.string.home_activity_user_error)
+            }
+
+            else -> Unit
         }
     }
 
@@ -100,30 +91,24 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
             .show()
     }
 
-    private fun handleSignOut() {
-        alertDialogSignOut {
-            Log.d(TAG, "User signed out")
-            model.signOut()
-            Intent(this, AuthenticationActivity::class.java)
-                .apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                    putExtra(SIGN_OUT_EXTRA, true)
-                }
-                .also {
-                    startActivity(it)
-                    finish()
-                }
-        }
+    private fun signOut() {
+        Log.d(TAG, "User signed out")
+        model.signOut()
+        val intent = Intent(this, AuthenticationActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        intent.putExtra(SIGN_OUT_EXTRA, true)
+        startActivity(intent)
+        finish()
     }
 
-    private fun alertDialogSignOut(handler: () -> Unit) {
+    private fun handleSignOut() {
         AlertDialog
             .Builder(this)
             .setTitle(getString(R.string.sign_out))
             .setMessage(getString(R.string.sign_out_alert_dialog_message))
             .setIcon(ContextCompat.getDrawable(this, R.drawable.dangerous_24px))
             .setCancelable(true)
-            .setPositiveButton("Yes") { log, _ -> log.dismiss(); handler() }
+            .setPositiveButton("Yes") { log, _ -> log.dismiss(); signOut() }
             .setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
             .show()
     }
@@ -134,17 +119,17 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
             .navView
             .getHeaderView(0).apply {
                 findViewById<ShapeableImageView>(R.id.account_image)
-                .let {
-                    Glide
-                        .with(this)
-                        .load(user.picture)
-                        .centerCrop()
-                        .placeholder(R.drawable.person)
-                        .into(it)
-                }
+                    .let {
+                        Glide
+                            .with(this)
+                            .load(user.picture)
+                            .centerCrop()
+                            .placeholder(R.drawable.person)
+                            .into(it)
+                    }
                 findViewById<TextView>(R.id.account_name)
                     .apply { text = user.name }
-        }
+            }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -161,6 +146,7 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
     override fun onMenuItemClick(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.sign_out -> { handleSignOut(); true }
+
             else -> false
         }
     }

@@ -19,7 +19,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.databinding.ActivityAuthenticationBinding
-import com.ffreitas.flowify.ui.home.HomeActivity
+import com.ffreitas.flowify.ui.main.HomeActivity
 import com.ffreitas.flowify.ui.authentication.components.signin.SignInActivity
 import com.ffreitas.flowify.ui.authentication.components.signup.SignUpActivity
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA

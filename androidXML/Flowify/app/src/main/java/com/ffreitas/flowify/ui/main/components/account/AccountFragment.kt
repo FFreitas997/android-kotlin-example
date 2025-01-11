@@ -1,4 +1,4 @@
-package com.ffreitas.flowify.ui.home.components.account
+package com.ffreitas.flowify.ui.main.components.account
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
@@ -17,26 +17,23 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.FragmentAccountBinding
-import com.ffreitas.flowify.ui.home.SharedViewModel
+import com.ffreitas.flowify.ui.main.HomeUIState
+import com.ffreitas.flowify.ui.main.SharedViewModel
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-import kotlinx.coroutines.launch
 import java.util.Locale
 
 class AccountFragment : Fragment() {
@@ -45,9 +42,6 @@ class AccountFragment : Fragment() {
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     private var _binding: FragmentAccountBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     private val model: AccountViewModel by viewModels { AccountViewModel.Factory }
@@ -100,51 +94,33 @@ class AccountFragment : Fragment() {
         binding.accountButton.setOnClickListener { onSubmit() }
         binding.accountImageContainer.setOnClickListener { handleImageSelection() }
 
-
-        val user = shared.currentUser
-        if (user == null) {
-            Log.e(TAG, "User not found.")
-            handleErrorMessage(R.string.account_fragment_user_error)
-            return root
+        shared.state.observe(viewLifecycleOwner) { state ->
+            if (state is HomeUIState.Success)
+                model.setCurrentUser(state.data) { currentUserUpdate(it) }
         }
-        model.setCurrentUser(user)
-        updateUserUI(user)
 
-
-        uiStateUpdate()
+        model.state.observe(viewLifecycleOwner) { handleAccountState(it) }
 
         return root
     }
 
-    private fun uiStateUpdate() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.state.collect { state ->
-                    when (state) {
-                        is AccountUIState.Loading -> {
-                            progressDialog.show()
-                        }
-
-                        is AccountUIState.Success -> {
-                            progressDialog.dismiss()
-                            handleSuccess()
-                        }
-
-                        is AccountUIState.Error -> {
-                            progressDialog.dismiss()
-                            handleError(state.message)
-                        }
-
-                        is AccountUIState.FileError -> {
-                            progressDialog.dismiss()
-                            Log.e(TAG, "Failed to load image: ${state.message}")
-                            handleErrorMessage(R.string.account_fragment_file_error)
-                        }
-
-                        else -> Unit
-                    }
-                }
+    private fun handleAccountState(state: AccountUIState) {
+        when (state) {
+            is AccountUIState.Loading -> {
+                progressDialog.show()
             }
+
+            is AccountUIState.Error -> {
+                progressDialog.dismiss()
+                handleError(state)
+            }
+
+            is AccountUIState.Success -> {
+                progressDialog.dismiss()
+                handleSuccess()
+            }
+
+            else -> { progressDialog.dismiss() }
         }
     }
 
@@ -157,17 +133,32 @@ class AccountFragment : Fragment() {
             param(FirebaseAnalytics.Param.CONTENT, "User information updated successfully.")
         }
         shared.getCurrentUser()
+        findNavController().popBackStack()
     }
 
-    private fun handleError(error: String) {
-        Log.e(TAG, "Error updating user information: $error")
-        firebaseAnalytics.logEvent("account_information_updated") {
-            param(FirebaseAnalytics.Param.LEVEL, "Account Information")
-            param(FirebaseAnalytics.Param.SUCCESS, "false")
-            param(FirebaseAnalytics.Param.CONTENT_TYPE, "Error")
-            param(FirebaseAnalytics.Param.CONTENT, error)
+    private fun handleError(error: AccountError) {
+        when (error) {
+            is AccountError.SubmitError -> {
+                Log.e(TAG, "Error updating user information: ${error.message}")
+                firebaseAnalytics.logEvent("account_information_updated") {
+                    param(FirebaseAnalytics.Param.LEVEL, "Account Information")
+                    param(FirebaseAnalytics.Param.SUCCESS, "false")
+                    param(FirebaseAnalytics.Param.CONTENT_TYPE, "Error")
+                    param(FirebaseAnalytics.Param.CONTENT, error.message)
+                }
+                handleErrorMessage(R.string.account_fragment_submit_error)
+            }
+
+            is AccountError.FileError -> {
+                Log.e(TAG, "Failed to load image: ${error.message}")
+                handleErrorMessage(R.string.account_fragment_file_error)
+            }
+
+            else -> {
+                Log.e(TAG, "An unknown error occurred.")
+            }
         }
-        handleErrorMessage(R.string.account_fragment_submit_error)
+
     }
 
     private fun isFormValid(): Boolean {
@@ -186,7 +177,9 @@ class AccountFragment : Fragment() {
         return isValid
     }
 
-    private fun updateUserUI(user: User) {
+    private fun currentUserUpdate(user: User) {
+        Log.d(TAG, "Updating user information UI.")
+
         binding.inputName.setText(user.name)
         binding.inputPhone.setText(String.format(Locale.getDefault(), "%d", user.mobile))
         binding.inputEmail.setText(user.email)
@@ -202,78 +195,20 @@ class AccountFragment : Fragment() {
 
     @SuppressLint("InlinedApi")
     private fun handleImageSelection() {
-        val permissionsUpsideDownCake = arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VISUAL_USER_SELECTED)
-        val permissionsTiramisu = arrayOf(READ_MEDIA_IMAGES)
-        val permissionsOlderVersions = arrayOf(READ_EXTERNAL_STORAGE)
-
-        val hasPermissionGranted = when {
-            VERSION.SDK_INT >= VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                permissionsUpsideDownCake.all { permission ->
-                    requireContext().checkSelfPermission(permission) == PERMISSION_GRANTED
-                }
-            }
-
-            VERSION.SDK_INT >= VERSION_CODES.TIRAMISU -> {
-                permissionsTiramisu.all {
-                    requireContext().checkSelfPermission(it) == PERMISSION_GRANTED
-                }
-            }
-
-            else -> {
-                permissionsOlderVersions.all {
-                    requireContext().checkSelfPermission(it) == PERMISSION_GRANTED
-                }
-            }
-        }
-
-        val showRationale = when {
-            VERSION.SDK_INT >= VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                permissionsUpsideDownCake.any { shouldShowRequestPermissionRationale(it) }
-            }
-
-            VERSION.SDK_INT >= VERSION_CODES.TIRAMISU -> {
-                permissionsTiramisu.any { shouldShowRequestPermissionRationale(it) }
-            }
-
-            else -> {
-                permissionsOlderVersions.any { shouldShowRequestPermissionRationale(it) }
-            }
-        }
-
-        if (hasPermissionGranted) {
+        Log.d(TAG, "Handling image selection.")
+        if (permissions.all { requireContext().checkSelfPermission(it) == PERMISSION_GRANTED }) {
             pickMedia.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
             return
         }
-        if (showRationale) {
-            AlertDialog
-                .Builder(requireContext())
-                .setTitle(getString(R.string.account_fragment_permission_title))
-                .setMessage(getString(R.string.account_fragment_permission_text))
-                .setCancelable(true)
-                .setIcon(R.drawable.dangerous_24px)
-                .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
-                .create()
-                .show()
+        if (permissions.any { shouldShowRequestPermissionRationale(it) }) {
+            handleErrorMessage(R.string.account_fragment_permission_text)
             return
         }
-
-        when {
-
-            VERSION.SDK_INT >= VERSION_CODES.UPSIDE_DOWN_CAKE -> {
-                activityResultPermissions.launch(permissionsUpsideDownCake)
-            }
-
-            VERSION.SDK_INT >= VERSION_CODES.TIRAMISU -> {
-                activityResultPermissions.launch(permissionsTiramisu)
-            }
-
-            else -> {
-                activityResultPermissions.launch(permissionsOlderVersions)
-            }
-        }
+        activityResultPermissions.launch(permissions)
     }
 
     private fun handlePhotoSelection(uri: Uri) {
+        Log.d(TAG, "Handling photo selected from gallery with URI: $uri")
         model.handlePictureSelection(requireContext(), uri)
         Glide
             .with(this)
@@ -284,6 +219,7 @@ class AccountFragment : Fragment() {
     }
 
     private fun onSubmit() {
+        Log.d(TAG, "Submitting user information.")
         if (!isFormValid()) return
         model.updateUserInformation()
     }
@@ -303,5 +239,19 @@ class AccountFragment : Fragment() {
 
     companion object {
         const val TAG = "Account Fragment"
+
+        private val permissions = when {
+            VERSION.SDK_INT >= VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+                arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VISUAL_USER_SELECTED)
+            }
+
+            VERSION.SDK_INT >= VERSION_CODES.TIRAMISU -> {
+                arrayOf(READ_MEDIA_IMAGES)
+            }
+
+            else -> {
+                arrayOf(READ_EXTERNAL_STORAGE)
+            }
+        }
     }
 }

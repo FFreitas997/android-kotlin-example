@@ -4,7 +4,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.components.board.list.BoardsFragment">
+    tools:context=".ui.main.components.board.list.BoardsFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/boards_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        tools:listitem="@layout/board_item"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/empty_boards_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/boards_fragment_no_boards_found"
+        android:textSize="@dimen/boards_fragment_no_data_size_tex"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

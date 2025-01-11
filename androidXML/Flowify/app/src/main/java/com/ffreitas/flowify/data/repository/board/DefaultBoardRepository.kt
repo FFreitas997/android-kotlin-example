@@ -1,11 +1,11 @@
 package com.ffreitas.flowify.data.repository.board
 
 import com.ffreitas.flowify.data.models.Board
-import com.ffreitas.flowify.data.network.firestore.FirestoreService
+import com.ffreitas.flowify.data.network.firestore.BoardFirestoreService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class DefaultBoardRepository(private val service: FirestoreService<Board>): BoardRepository {
+class DefaultBoardRepository(private val service: BoardFirestoreService): BoardRepository {
 
     private val context = Dispatchers.IO
 
@@ -30,4 +30,7 @@ class DefaultBoardRepository(private val service: FirestoreService<Board>): Boar
     override suspend fun getBoards() {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getBoardsByUserID(userID: String) =
+        withContext(context) { service.readAllByUserID(userID) }
 }

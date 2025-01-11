@@ -26,10 +26,10 @@
         android:theme="@style/Theme.App.SplashScreen"
         tools:targetApi="31" >
         <activity
-            android:name=".ui.home.components.board.create.CreateBoardActivity"
+            android:name=".ui.main.components.board.create.CreateBoardActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.home.HomeActivity"
+            android:name=".ui.main.HomeActivity"
             android:exported="false"
             android:theme="@style/Theme.App.SplashScreen.NoActionBar" />
         <activity

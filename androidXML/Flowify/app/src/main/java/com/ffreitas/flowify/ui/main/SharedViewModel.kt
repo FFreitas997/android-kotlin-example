@@ -1,5 +1,7 @@
-package com.ffreitas.flowify.ui.home
+package com.ffreitas.flowify.ui.main
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -11,10 +13,6 @@ import com.ffreitas.flowify.data.repository.auth.AuthRepository
 import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
 import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
 import com.ffreitas.flowify.data.repository.user.UserRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SharedViewModel(
@@ -22,22 +20,22 @@ class SharedViewModel(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _state: MutableStateFlow<HomeUIState<User>?> = MutableStateFlow(null)
-    val state: StateFlow<HomeUIState<User>?> = _state.asStateFlow()
+    private val _state: MutableLiveData<HomeUIState<User>> = MutableLiveData()
+    val state: LiveData<HomeUIState<User>> = _state
 
-    var currentUser: User? = null
-
-    init { getCurrentUser() }
+    init {
+        getCurrentUser()
+    }
 
     fun getCurrentUser() {
         viewModelScope.launch {
             try {
+                _state.postValue(HomeUIState.Loading)
                 val result = userRepository.getCurrentUser()
                 checkNotNull(result) { "User not found" }
-                currentUser = result
-                _state.update { HomeUIState.Success(result) }
+                _state.postValue(HomeUIState.Success(result))
             } catch (e: Exception) {
-                _state.update { HomeUIState.Error(e.message ?: "Failed to get user") }
+                _state.postValue(HomeUIState.Error(e.message ?: "An error occurred"))
             }
         }
     }
@@ -61,6 +59,7 @@ class SharedViewModel(
 }
 
 sealed interface HomeUIState<out S> {
+    data object Loading : HomeUIState<Nothing>
     data class Success<S>(val data: S) : HomeUIState<S>
     data class Error(val message: String) : HomeUIState<Nothing>
 }

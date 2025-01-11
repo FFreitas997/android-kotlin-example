@@ -27,4 +27,8 @@
     <dimen name="create_board_activity_card_corner_radius">16dp</dimen>
     <dimen name="create_board_activity_card_elevation">10dp</dimen>
     <dimen name="create_board_activity_image_size">100dp</dimen>
+    <dimen name="boards_fragment_no_data_size_tex">20sp</dimen>
+    <dimen name="recycler_view_board_item_image_size">60dp</dimen>
+    <dimen name="recycler_view_board_item_name_size">20sp</dimen>
+    <dimen name="recycler_view_board_item_date_size">14sp</dimen>
 </resources>

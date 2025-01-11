@@ -39,4 +39,12 @@ class BoardFirestoreService(service: FirebaseFirestore) : FirestoreService<Board
             .delete()
             .await()
     }
+
+    suspend fun readAllByUserID(userID: String): List<Board> {
+        val snapshot = boardCollection
+            .whereEqualTo("createdBy", userID)
+            .get()
+            .await()
+        return snapshot.toObjects(Board::class.java)
+    }
 }

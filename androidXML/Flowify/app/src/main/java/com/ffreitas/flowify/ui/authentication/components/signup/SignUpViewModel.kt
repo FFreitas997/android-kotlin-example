@@ -2,6 +2,8 @@ package com.ffreitas.flowify.ui.authentication.components.signup
 
 import android.text.Editable
 import android.util.Patterns
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -14,10 +16,6 @@ import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
 import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
 import com.ffreitas.flowify.data.repository.user.UserRepository
 import com.ffreitas.flowify.utils.Constants.PASSWORD_MIN_LENGTH
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SignUpViewModel(
@@ -25,12 +23,12 @@ class SignUpViewModel(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
+    private val _state: MutableLiveData<SignUpUIState<String>> = MutableLiveData()
+    val state: LiveData<SignUpUIState<String>> = _state
+
     private var name = ""
     private var email = ""
     private var password = ""
-
-    private val _state: MutableStateFlow<SignUpUIState<String>?> = MutableStateFlow(null)
-    val state: StateFlow<SignUpUIState<String>?> = _state.asStateFlow()
 
     fun onNameChanged(name: Editable?) {
         name?.let { this.name = it.toString() }
@@ -53,7 +51,7 @@ class SignUpViewModel(
     fun signUp() {
         viewModelScope.launch {
             try {
-                _state.update { SignUpUIState.Loading }
+                _state.postValue(SignUpUIState.Loading)
 
                 val result = authRepository.signUp(name, email, password)
 
@@ -67,9 +65,9 @@ class SignUpViewModel(
 
                 userRepository.createUser(user)
 
-                _state.update { SignUpUIState.Success(user.id) }
+                _state.postValue(SignUpUIState.Success(user.id))
             } catch (e: Exception) {
-                _state.update { SignUpUIState.Error(e.message ?: "Failed to sign up user") }
+                _state.postValue(SignUpUIState.Error(e.message ?: "An error occurred"))
             }
         }
     }

@@ -10,12 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.databinding.ActivitySignUpBinding
-import com.ffreitas.flowify.ui.home.HomeActivity
+import com.ffreitas.flowify.ui.main.HomeActivity
 import com.ffreitas.flowify.utils.BackPressedCallback
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.android.material.snackbar.Snackbar
@@ -23,7 +20,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-import kotlinx.coroutines.launch
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -89,29 +85,21 @@ class SignUpActivity : AppCompatActivity() {
             .buttonSignUp
             .setOnClickListener { onClickSubmit() }
 
-        handleUIState()
+        model.state.observe(this) { handleUIState(it) }
     }
 
-    private fun handleUIState() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.state.collect { state ->
-                    when (state) {
-                        is SignUpUIState.Loading -> progressDialog.show()
+    private fun handleUIState(state: SignUpUIState<String>) {
+        when (state) {
+            is SignUpUIState.Loading -> progressDialog.show()
 
-                        is SignUpUIState.Success -> {
-                            progressDialog.dismiss()
-                            handleSubmitSuccess(state.data)
-                        }
+            is SignUpUIState.Success -> {
+                progressDialog.dismiss()
+                handleSubmitSuccess(state.data)
+            }
 
-                        is SignUpUIState.Error -> {
-                            progressDialog.dismiss()
-                            handleSubmitError(state.message)
-                        }
-
-                        else -> Unit
-                    }
-                }
+            is SignUpUIState.Error -> {
+                progressDialog.dismiss()
+                handleSubmitError(state.message)
             }
         }
     }
@@ -130,11 +118,10 @@ class SignUpActivity : AppCompatActivity() {
 
     private fun handleSubmitError(message: String) {
         Log.e(TAG, "sign-up error: $message")
-        firebaseAnalytics
-            .logEvent(FirebaseAnalytics.Event.SIGN_UP) {
-                param(FirebaseAnalytics.Param.CONTENT_TYPE, "error")
-                param(FirebaseAnalytics.Param.CONTENT, message)
-            }
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP) {
+            param(FirebaseAnalytics.Param.CONTENT_TYPE, "error")
+            param(FirebaseAnalytics.Param.CONTENT, message)
+        }
         handleErrorMessage(R.string.signup_screen_submit_error)
     }
 

@@ -10,12 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.databinding.ActivitySignInBinding
-import com.ffreitas.flowify.ui.home.HomeActivity
+import com.ffreitas.flowify.ui.main.HomeActivity
 import com.ffreitas.flowify.utils.BackPressedCallback
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.android.material.snackbar.Snackbar
@@ -23,7 +20,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-import kotlinx.coroutines.launch
 
 class SignInActivity : AppCompatActivity() {
 
@@ -80,29 +76,21 @@ class SignInActivity : AppCompatActivity() {
 
         layout.buttonSignIn.setOnClickListener { onClickSubmit() }
 
-        handleUIState()
+        model.state.observe(this) { handleUIState(it) }
     }
 
-    private fun handleUIState() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.state.collect { state ->
-                    when (state) {
-                        is SignInUIState.Loading -> progressDialog.show()
+    private fun handleUIState(state: SignInUIState<String>) {
+        when (state) {
+            is SignInUIState.Loading -> progressDialog.show()
 
-                        is SignInUIState.Success -> {
-                            progressDialog.dismiss()
-                            handleSubmitSuccess(state.data)
-                        }
+            is SignInUIState.Success -> {
+                progressDialog.dismiss()
+                handleSubmitSuccess(state.data)
+            }
 
-                        is SignInUIState.Error -> {
-                            progressDialog.dismiss()
-                            handleSubmitError(state.message)
-                        }
-
-                       else -> Unit
-                    }
-                }
+            is SignInUIState.Error -> {
+                progressDialog.dismiss()
+                handleSubmitError(state.message)
             }
         }
     }

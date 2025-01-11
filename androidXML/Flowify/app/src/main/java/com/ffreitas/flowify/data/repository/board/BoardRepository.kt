@@ -13,4 +13,6 @@ interface BoardRepository {
     suspend fun deleteBoard()
 
     suspend fun getBoards()
+
+    suspend fun getBoardsByUserID(userID: String): List<Board>
 }

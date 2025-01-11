@@ -54,6 +54,9 @@
     <string name="create_board_activity_permission_required">The selection of board image required permission to select an image from your phone gallery. Please enable the permission in your phone settings</string>
     <string name="create_board_activity_permission_denied">Something went wrong when you were picking a nice picture for your board.</string>
     <string name="create_board_activity_error">An error occurred while creating the board. Please check your information.</string>
-    <string name="account_fragment_user_error">User not found. Please, log in.</string>
+    <string name="account_fragment_user_error">User not found. Please log in.</string>
     <string name="menu_boards">Boards</string>
+    <string name="boards_fragment_error_fetching_boards">An error occurred while fetching your list of boards</string>
+    <string name="boards_fragment_no_boards_found">No boards found</string>
+    <string name="create_board_activity_error_picture">An error occurred while processing the image you picked from gallery</string>
 </resources>

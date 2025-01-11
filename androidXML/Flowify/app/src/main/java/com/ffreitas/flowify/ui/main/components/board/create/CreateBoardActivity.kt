@@ -1,4 +1,4 @@
-package com.ffreitas.flowify.ui.home.components.board.create
+package com.ffreitas.flowify.ui.main.components.board.create
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
@@ -19,9 +19,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.Glide
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.Board
@@ -33,7 +30,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-import kotlinx.coroutines.launch
 
 class CreateBoardActivity : AppCompatActivity() {
 
@@ -104,11 +100,7 @@ class CreateBoardActivity : AppCompatActivity() {
             .boardImageContainer
             .setOnClickListener { onSelectPicture() }
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.state.collect { handleState(it) }
-            }
-        }
+        model.state.observe(this) { handleState(it) }
     }
 
     private fun onCreateBoard() {
@@ -173,19 +165,30 @@ class CreateBoardActivity : AppCompatActivity() {
 
             is CreateBoardUIState.Error -> {
                 progressDialog.dismiss()
-                handleErrorState(state.message)
+                handleErrorState(state)
             }
 
-            else -> Unit
+            else -> progressDialog.dismiss()
         }
     }
 
-    private fun handleErrorState(message: String) {
-        Log.d(TAG, "Error occurred: $message")
-        firebaseAnalytics.logEvent("board_creation_error") {
-            param("error_message", message)
+    private fun handleErrorState(error: TypeError) {
+        when (error) {
+            is TypeError.SubmitError -> {
+                Log.d(TAG, "Error occurred: ${error.message}")
+                firebaseAnalytics.logEvent("board_creation_error") {
+                    param("error_message", error.message)
+                }
+                handleErrorMessage(R.string.create_board_activity_error)
+            }
+
+            is TypeError.FileError -> {
+                Log.e(TAG, "Error occurred: ${error.message}")
+                handleErrorMessage(R.string.create_board_activity_error_picture)
+            }
+
+            else -> Log.e(TAG, "Unknown error occurred")
         }
-        handleErrorMessage(R.string.create_board_activity_error)
     }
 
     private fun handleSuccessState(result: Board) {

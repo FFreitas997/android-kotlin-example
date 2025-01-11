@@ -52,4 +52,7 @@
     <string name="create_board_activity_error">Ocorreu um erro ao criar o quadro. Verifique suas informações.</string>
     <string name="account_fragment_user_error">Utilizador não encontrado. Por favor, faça login.</string>
     <string name="menu_boards">Quadros</string>
+    <string name="boards_fragment_error_fetching_boards">Ocorreu um erro ao buscar sua lista de quadros</string>
+    <string name="boards_fragment_no_boards_found">Nenhum quadro encontrado</string>
+    <string name="create_board_activity_error_picture">Ocorreu um erro durante o processamento da imagem escolhida da galeria</string>
 </resources>
