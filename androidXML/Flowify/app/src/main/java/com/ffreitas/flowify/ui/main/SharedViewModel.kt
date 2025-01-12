@@ -20,8 +20,15 @@ class SharedViewModel @Inject constructor(
     private val _state: MutableLiveData<HomeUIState<User>> = MutableLiveData()
     val state: LiveData<HomeUIState<User>> = _state
 
+    private val _shouldFetchBoards: MutableLiveData<Boolean> = MutableLiveData()
+    val shouldFetchBoards: LiveData<Boolean> = _shouldFetchBoards
+
     init {
         getCurrentUser()
+    }
+
+    fun signalBoardsFetch() {
+        _shouldFetchBoards.postValue(true)
     }
 
     fun getCurrentUser() {

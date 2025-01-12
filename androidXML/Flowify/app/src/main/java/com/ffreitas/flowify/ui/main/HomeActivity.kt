@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -37,6 +38,12 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
     private lateinit var binding: ActivityHomeBinding
     private val model by viewModels<SharedViewModel>()
 
+    private val createActivityLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK)
+                model.signalBoardsFetch()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -64,8 +71,8 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
     }
 
     private fun handleCreateButton() {
-        Intent(this, CreateBoardActivity::class.java)
-            .also { startActivity(it) }
+        val intent = Intent(this, CreateBoardActivity::class.java)
+        createActivityLauncher.launch(intent)
     }
 
     private fun handleState(state: HomeUIState<User>) {
@@ -78,6 +85,7 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
             is HomeUIState.Error -> {
                 Log.d(TAG, "Error occurred: ${state.message}")
                 handleErrorMessage(R.string.home_activity_user_error)
+                finish()
             }
 
             else -> Unit
@@ -147,7 +155,9 @@ class HomeActivity : AppCompatActivity(), OnMenuItemClickListener {
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.sign_out -> { handleSignOut(); true }
+            R.id.sign_out -> {
+                handleSignOut(); true
+            }
 
             else -> false
         }

@@ -199,6 +199,7 @@ class CreateBoardActivity : AppCompatActivity() {
             param("board_id", result.id)
             param("board_name", result.name)
         }
+        setResult(RESULT_OK)
         finish()
     }
 

@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.Board
 import com.ffreitas.flowify.databinding.FragmentBoardsBinding
-import com.ffreitas.flowify.ui.main.HomeUIState
 import com.ffreitas.flowify.ui.main.SharedViewModel
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.android.material.snackbar.Snackbar
@@ -40,12 +39,12 @@ class BoardsFragment : Fragment() {
 
         progressDialog = ProgressDialog(requireActivity())
 
-        shared.state.observe(viewLifecycleOwner) { state ->
-            if (state is HomeUIState.Success)
-                model.fetchBoards(state.data.id)
-        }
-
         model.state.observe(viewLifecycleOwner) { handleState(it) }
+
+        shared.shouldFetchBoards.observe(viewLifecycleOwner) { shouldUpdate ->
+            if (shouldUpdate)
+                model.fetchBoards()
+        }
 
         return root
     }
