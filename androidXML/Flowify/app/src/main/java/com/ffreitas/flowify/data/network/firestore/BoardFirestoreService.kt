@@ -1,23 +1,24 @@
 package com.ffreitas.flowify.data.network.firestore
 
 import com.ffreitas.flowify.data.models.Board
+import com.ffreitas.flowify.utils.Constants.BOARD_COLLECTION
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 class BoardFirestoreService(service: FirebaseFirestore) : FirestoreService<Board> {
 
-    private val boardCollection = service.collection("boards")
+    override val collection = service.collection(BOARD_COLLECTION)
 
     override suspend fun create(documentID: String, model: Board) {
-        boardCollection
+        collection
             .document(documentID)
             .set(model, SetOptions.merge())
             .await()
     }
 
     override suspend fun read(documentID: String): Board {
-        val snapshot = boardCollection
+        val snapshot = collection
             .document(documentID)
             .get()
             .await()
@@ -26,25 +27,25 @@ class BoardFirestoreService(service: FirebaseFirestore) : FirestoreService<Board
         return board
     }
 
+    override suspend fun readWhereEquals(field: String, value: String): List<Board> {
+        val snapshot = collection
+            .whereEqualTo(field, value)
+            .get()
+            .await()
+        return snapshot.toObjects(Board::class.java)
+    }
+
     override suspend fun update(documentID: String, fields: Map<String, Any>) {
-        boardCollection
+        collection
             .document(documentID)
             .update(fields)
             .await()
     }
 
     override suspend fun delete(documentID: String) {
-        boardCollection
+        collection
             .document(documentID)
             .delete()
             .await()
-    }
-
-    suspend fun readAllByUserID(userID: String): List<Board> {
-        val snapshot = boardCollection
-            .whereEqualTo("createdBy", userID)
-            .get()
-            .await()
-        return snapshot.toObjects(Board::class.java)
     }
 }

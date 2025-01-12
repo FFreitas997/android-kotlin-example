@@ -10,6 +10,7 @@ object Constants {
     const val SPLASH_SCREEN_DELAY = 4500L
     const val PASSWORD_MIN_LENGTH = 6
     const val USER_COLLECTION = "users"
+    const val BOARD_COLLECTION = "boards"
     const val SIGN_OUT_EXTRA = "sign_out"
     const val CLOUD_STORAGE_URL = "gs://flowify-d6109.firebasestorage.app"
 }

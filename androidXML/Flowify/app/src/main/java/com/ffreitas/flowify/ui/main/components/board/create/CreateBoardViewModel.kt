@@ -6,27 +6,23 @@ import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
-import com.ffreitas.flowify.FlowifyApplication
 import com.ffreitas.flowify.data.models.Board
 import com.ffreitas.flowify.data.repository.auth.AuthRepository
-import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
 import com.ffreitas.flowify.data.repository.board.BoardRepository
-import com.ffreitas.flowify.data.repository.board.DefaultBoardRepository
-import com.ffreitas.flowify.data.repository.storage.DefaultStorageRepository
 import com.ffreitas.flowify.data.repository.storage.StorageRepository
 import com.ffreitas.flowify.utils.Constants
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import javax.inject.Inject
 
-class CreateBoardViewModel(
+@HiltViewModel
+class CreateBoardViewModel @Inject constructor(
     private val repository: BoardRepository,
     private val storage: StorageRepository,
     private val authentication: AuthRepository
@@ -102,26 +98,6 @@ class CreateBoardViewModel(
     fun isNameValid() = name.isNotEmpty() && name.length <= Constants.MAX_BOARD_NAME_LENGTH
 
     fun isPictureValid() = boardPicture != null && boardPicture!!.exists()
-
-
-    companion object {
-
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
-                val boardRepository = DefaultBoardRepository(application.boardStorage)
-                val storageRepository = DefaultStorageRepository(application.resourceStorage)
-                val authenticationRepository = DefaultAuthRepository(application.authentication)
-                return CreateBoardViewModel(
-                    boardRepository,
-                    storageRepository,
-                    authenticationRepository
-                ) as T
-            }
-        }
-    }
 }
 
 sealed interface CreateBoardUIState<out S> {

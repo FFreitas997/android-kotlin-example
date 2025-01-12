@@ -6,24 +6,21 @@ import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
-import com.ffreitas.flowify.FlowifyApplication
 import com.ffreitas.flowify.data.models.User
-import com.ffreitas.flowify.data.repository.storage.DefaultStorageRepository
 import com.ffreitas.flowify.data.repository.storage.StorageRepository
-import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
 import com.ffreitas.flowify.data.repository.user.UserRepository
 import com.ffreitas.flowify.utils.Constants
 import com.ffreitas.flowify.utils.Constants.PHONE_LENGTH
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import javax.inject.Inject
 
-class AccountViewModel(
+@HiltViewModel
+class AccountViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val storageRepository: StorageRepository
 ) : ViewModel() {
@@ -113,21 +110,11 @@ class AccountViewModel(
 
                 _state.postValue(AccountUIState.Success)
             } catch (e: Exception) {
-                _state.postValue(AccountError.SubmitError(e.message ?: "Failed to submit user information"))
-            }
-        }
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
-                val userRepository = DefaultUserRepository(application.userStorage)
-                val storage = DefaultStorageRepository(application.resourceStorage)
-
-                return AccountViewModel(userRepository, storage) as T
+                _state.postValue(
+                    AccountError.SubmitError(
+                        e.message ?: "Failed to submit user information"
+                    )
+                )
             }
         }
     }
@@ -141,7 +128,7 @@ sealed interface AccountUIState {
     data class Error(val message: String) : AccountError
 }
 
-sealed interface AccountError: AccountUIState {
+sealed interface AccountError : AccountUIState {
     data class SubmitError(val message: String) : AccountError
     data class FileError(val message: String) : AccountError
 }

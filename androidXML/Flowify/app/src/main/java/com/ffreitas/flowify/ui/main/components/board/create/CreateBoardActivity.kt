@@ -30,13 +30,15 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class CreateBoardActivity : AppCompatActivity() {
 
     private var _layout: ActivityCreateBoardBinding? = null
     private val layout get() = _layout!!
 
-    private val model: CreateBoardViewModel by viewModels { CreateBoardViewModel.Factory }
+    private val model by viewModels<CreateBoardViewModel>()
 
     private lateinit var progressDialog: ProgressDialog
     private lateinit var firebaseAnalytics: FirebaseAnalytics

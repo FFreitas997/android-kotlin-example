@@ -20,7 +20,9 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var progressDialog: ProgressDialog
@@ -28,7 +30,8 @@ class SignUpActivity : AppCompatActivity() {
 
     private var _layout: ActivitySignUpBinding? = null
     private val layout get() = _layout!!
-    private val model: SignUpViewModel by viewModels { SignUpViewModel.Factory }
+
+    private val model by viewModels<SignUpViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

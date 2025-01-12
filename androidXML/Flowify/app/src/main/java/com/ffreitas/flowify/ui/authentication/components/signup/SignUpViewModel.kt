@@ -5,20 +5,17 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
-import com.ffreitas.flowify.FlowifyApplication
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.data.repository.auth.AuthRepository
-import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
-import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
 import com.ffreitas.flowify.data.repository.user.UserRepository
 import com.ffreitas.flowify.utils.Constants.PASSWORD_MIN_LENGTH
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SignUpViewModel(
+@HiltViewModel
+class SignUpViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
@@ -68,20 +65,6 @@ class SignUpViewModel(
                 _state.postValue(SignUpUIState.Success(user.id))
             } catch (e: Exception) {
                 _state.postValue(SignUpUIState.Error(e.message ?: "An error occurred"))
-            }
-        }
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
-                val authRepository = DefaultAuthRepository(application.authentication)
-                val userRepository = DefaultUserRepository(application.userStorage)
-
-                return SignUpViewModel(authRepository, userRepository) as T
             }
         }
     }

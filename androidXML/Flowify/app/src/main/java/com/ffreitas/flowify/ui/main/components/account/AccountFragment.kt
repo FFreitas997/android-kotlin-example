@@ -34,8 +34,10 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 
+@AndroidEntryPoint
 class AccountFragment : Fragment() {
 
     private lateinit var progressDialog: ProgressDialog
@@ -44,8 +46,8 @@ class AccountFragment : Fragment() {
     private var _binding: FragmentAccountBinding? = null
     private val binding get() = _binding!!
 
-    private val model: AccountViewModel by viewModels { AccountViewModel.Factory }
-    private val shared: SharedViewModel by activityViewModels { SharedViewModel.Factory }
+    private val model by viewModels<AccountViewModel>()
+    private val shared by activityViewModels<SharedViewModel>()
 
     private val activityResultPermissions =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {

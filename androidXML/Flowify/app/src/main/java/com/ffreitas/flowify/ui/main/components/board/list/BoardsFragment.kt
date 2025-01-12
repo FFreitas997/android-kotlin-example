@@ -17,7 +17,9 @@ import com.ffreitas.flowify.ui.main.HomeUIState
 import com.ffreitas.flowify.ui.main.SharedViewModel
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class BoardsFragment : Fragment() {
 
     private lateinit var progressDialog: ProgressDialog
@@ -25,8 +27,8 @@ class BoardsFragment : Fragment() {
     private var _binding: FragmentBoardsBinding? = null
     private val binding get() = _binding!!
 
-    private val model by viewModels<BoardsViewModel> { BoardsViewModel.Factory }
-    private val shared: SharedViewModel by activityViewModels { SharedViewModel.Factory }
+    private val model by viewModels<BoardsViewModel>()
+    private val shared by activityViewModels<SharedViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

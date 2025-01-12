@@ -8,34 +8,40 @@ import kotlinx.coroutines.tasks.await
 
 class UserFirestoreService(service: FirebaseFirestore) : FirestoreService<User> {
 
-    private val userCollection = service.collection(USER_COLLECTION)
+    override val collection = service.collection(USER_COLLECTION)
 
     override suspend fun create(documentID: String, model: User) {
-        userCollection
+        collection
             .document(documentID)
             .set(model, SetOptions.merge())
             .await()
     }
 
     override suspend fun read(documentID: String): User {
-        val snapshot = userCollection
+        val snapshot = collection
             .document(documentID)
             .get()
             .await()
-        val user = snapshot.toObject(User::class.java)
-        checkNotNull(user) { "User not found" }
-        return user
+        return snapshot.toObject(User::class.java) ?: throw Exception("User not found")
+    }
+
+    override suspend fun readWhereEquals(field: String, value: String): List<User> {
+        val snapshot = collection
+            .whereEqualTo(field, value)
+            .get()
+            .await()
+        return snapshot.toObjects(User::class.java)
     }
 
     override suspend fun update(documentID: String, fields: Map<String, Any>) {
-        userCollection
+        collection
             .document(documentID)
             .update(fields)
             .await()
     }
 
     override suspend fun delete(documentID: String) {
-        userCollection
+        collection
             .document(documentID)
             .delete()
             .await()

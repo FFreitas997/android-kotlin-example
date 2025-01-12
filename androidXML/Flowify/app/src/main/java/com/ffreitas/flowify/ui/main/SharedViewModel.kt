@@ -3,19 +3,16 @@ package com.ffreitas.flowify.ui.main
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
-import com.ffreitas.flowify.FlowifyApplication
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.data.repository.auth.AuthRepository
-import com.ffreitas.flowify.data.repository.auth.DefaultAuthRepository
-import com.ffreitas.flowify.data.repository.user.DefaultUserRepository
 import com.ffreitas.flowify.data.repository.user.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SharedViewModel(
+@HiltViewModel
+class SharedViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
@@ -41,21 +38,6 @@ class SharedViewModel(
     }
 
     fun signOut() = authRepository.signOut()
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-                val application = checkNotNull(extras[APPLICATION_KEY]) as FlowifyApplication
-                val authRepository = DefaultAuthRepository(application.authentication)
-                val userRepository = DefaultUserRepository(
-                    firestore = application.userStorage,
-                    authentication = application.authentication
-                )
-                return SharedViewModel(authRepository, userRepository) as T
-            }
-        }
-    }
 }
 
 sealed interface HomeUIState<out S> {

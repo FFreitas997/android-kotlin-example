@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 
 class DefaultUserRepository(
     private val firestore: FirestoreService<User>,
-    private val authentication: FirebaseAuthService? = null,
+    private val authentication: FirebaseAuthService,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : UserRepository {
 

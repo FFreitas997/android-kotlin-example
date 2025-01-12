@@ -24,14 +24,16 @@ import com.ffreitas.flowify.ui.authentication.components.signin.SignInActivity
 import com.ffreitas.flowify.ui.authentication.components.signup.SignUpActivity
 import com.ffreitas.flowify.utils.Constants.SIGN_OUT_EXTRA
 import com.ffreitas.flowify.utils.Constants.SPLASH_SCREEN_DELAY
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class AuthenticationActivity : AppCompatActivity(), OnClickListener {
 
     private var _layout: ActivityAuthenticationBinding? = null
     private val layout get() = _layout!!
 
     private var keepSplashOnScreen = true
-    private val model by viewModels<AuthenticationViewModel> { AuthenticationViewModel.Factory }
+    private val model by viewModels<AuthenticationViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val isSignOut = intent.getBooleanExtra(SIGN_OUT_EXTRA, false)

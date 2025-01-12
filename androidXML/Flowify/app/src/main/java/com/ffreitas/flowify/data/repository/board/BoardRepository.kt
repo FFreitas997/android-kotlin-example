@@ -8,11 +8,9 @@ interface BoardRepository {
 
     suspend fun getBoard(id: String): Board
 
-    suspend fun updateBoard()
+    suspend fun updateBoard(board: Board)
 
-    suspend fun deleteBoard()
-
-    suspend fun getBoards()
+    suspend fun deleteBoard(id: String)
 
     suspend fun getBoardsByUserID(userID: String): List<Board>
 }
