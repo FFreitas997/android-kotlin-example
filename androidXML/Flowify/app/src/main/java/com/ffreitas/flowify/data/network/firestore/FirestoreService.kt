@@ -16,6 +16,8 @@ interface FirestoreService<S> {
 
     suspend fun readWhereEquals(field: String, value: Any): List<S>
 
+    suspend fun readWhereIn(field: String, values: List<Any>): List<S>
+
     suspend fun readWhereArrayContains(field: String, value: Any): List<S>
 
     suspend fun update(documentID: String, fields: Map<String, Any>)

@@ -10,7 +10,7 @@ interface UserRepository {
 
     suspend fun getUserByEmail(email: String): User?
 
-    suspend fun getCurrentUser(): User?
+    suspend fun getUsersByMultipleIDs(ids: List<String>): List<User>
 
     suspend fun updateUser(user: User)
 

@@ -34,8 +34,7 @@ class MembershipViewModel @Inject constructor(
                 checkNotNull(currentBoardID) { "Board ID not found" }
                 val members = boardRepository
                     .getBoard(currentBoardID!!)
-                    .assignTo
-                    .map { userRepository.getUserByID(it) }
+                    .let { userRepository.getUsersByMultipleIDs(it.assignTo) }
                 _membersState.postValue(MembershipState.Success(members))
             } catch (e: Exception) {
                 _membersState.postValue(MembershipState.Error(e.message ?: "Failed to get members"))

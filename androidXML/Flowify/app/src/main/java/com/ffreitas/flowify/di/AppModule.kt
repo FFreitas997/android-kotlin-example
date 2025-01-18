@@ -93,7 +93,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserRepository(service: FirestoreService<User>, serviceAuth: FirebaseAuthService): UserRepository {
-        return DefaultUserRepository(service, serviceAuth)
+    fun provideUserRepository(service: FirestoreService<User>): UserRepository {
+        return DefaultUserRepository(service)
     }
 }

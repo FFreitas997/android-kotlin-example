@@ -35,8 +35,12 @@ class SharedViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _state.postValue(HomeUIState.Loading)
-                val result = userRepository.getCurrentUser()
-                checkNotNull(result) { "User not found" }
+                val authenticated = authRepository.getCurrentUser()
+                if (authenticated == null) {
+                    _state.postValue(HomeUIState.Error("User not found"))
+                    return@launch
+                }
+                val result = userRepository.getUserByID(authenticated.uid)
                 _state.postValue(HomeUIState.Success(result))
             } catch (e: Exception) {
                 _state.postValue(HomeUIState.Error(e.message ?: "An error occurred"))
