@@ -49,7 +49,8 @@ class CreateBoardViewModel @Inject constructor(
                     picture = boardImageUri.toString(),
                     createdBy = currentUser.uid,
                     createdAt = getCurrentDateTime(),
-                    assignTo = listOf(currentUser.uid)
+                    assignTo = listOf(currentUser.uid),
+                    taskList = emptyList()
                 )
                 repository.createBoard(board)
                 _state.postValue(CreateBoardUIState.Success(board))

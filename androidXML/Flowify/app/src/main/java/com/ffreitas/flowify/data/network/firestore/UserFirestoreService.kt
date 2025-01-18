@@ -25,9 +25,17 @@ class UserFirestoreService(service: FirebaseFirestore) : FirestoreService<User> 
         return snapshot.toObject(User::class.java) ?: throw Exception("User not found")
     }
 
-    override suspend fun readWhereEquals(field: String, value: String): List<User> {
+    override suspend fun readWhereEquals(field: String, value: Any): List<User> {
         val snapshot = collection
             .whereEqualTo(field, value)
+            .get()
+            .await()
+        return snapshot.toObjects(User::class.java)
+    }
+
+    override suspend fun readWhereArrayContains(field: String, value: Any): List<User> {
+        val snapshot = collection
+            .whereArrayContains(field, value)
             .get()
             .await()
         return snapshot.toObjects(User::class.java)

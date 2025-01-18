@@ -17,4 +17,10 @@
         android:label="@string/menu_account"
         tools:layout="@layout/fragment_account" />
 
+    <fragment
+        android:id="@+id/nav_tasks"
+        android:name="com.ffreitas.flowify.ui.main.components.task.TasksFragment"
+        android:label="@string/menu_tasks"
+        tools:layout="@layout/fragment_tasks" />
+
 </navigation>

@@ -1,6 +1,8 @@
 package com.ffreitas.flowify.utils
 
 object Constants {
+    const val EXTRA_BOARD = "extra_board"
+    const val EXTRA_BOARD_MEMBER = "extra_board_member"
     const val PROFILE_FILE_PREFIX = "profile_picture"
     const val BOARD_FILE_PREFIX = "board_picture"
     const val PROFILE_PICTURE_PATH = "profile_pictures"

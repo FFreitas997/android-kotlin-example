@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/regular_margin"
+    android:padding="@dimen/small_padding">
+
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/person_picture"
+        android:layout_width="@dimen/recycler_view_person_picture_image_size"
+        android:layout_height="@dimen/recycler_view_person_picture_image_size"
+        android:contentDescription="@string/profile_image"
+        android:scaleType="centerCrop"
+        android:src="@drawable/person"
+        app:shapeAppearanceOverlay="@style/Circular"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:layout_marginHorizontal="@dimen/regular_margin"
+        app:layout_constraintStart_toEndOf="@id/person_picture"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/person_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/small_margin"
+            android:textSize="@dimen/recycler_view_person_info_text_size"
+            tools:text="Francisco Freitas"/>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/person_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/small_margin"
+            android:textSize="@dimen/recycler_view_person_info_text_size"
+            tools:text="francisco.freitas.ff@gmail.com"/>
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

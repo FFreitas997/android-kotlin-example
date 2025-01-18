@@ -1,5 +1,6 @@
 package com.ffreitas.flowify.ui.main.components.board.list
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,6 +15,8 @@ import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.Board
 import com.ffreitas.flowify.databinding.FragmentBoardsBinding
 import com.ffreitas.flowify.ui.main.SharedViewModel
+import com.ffreitas.flowify.ui.main.components.board.details.DetailsBoardActivity
+import com.ffreitas.flowify.utils.Constants
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -91,9 +94,10 @@ class BoardsFragment : Fragment() {
     }
 
     private fun handleClickBoard(board: Board) {
-        Snackbar
-            .make(binding.root, "Clicked on ${board.name}", Snackbar.LENGTH_SHORT)
-            .show()
+        Intent(requireContext(), DetailsBoardActivity::class.java).apply {
+            putExtra(Constants.EXTRA_BOARD, board.id)
+            startActivity(this)
+        }
     }
 
     private fun handleErrorMessage(@StringRes message: Int) {

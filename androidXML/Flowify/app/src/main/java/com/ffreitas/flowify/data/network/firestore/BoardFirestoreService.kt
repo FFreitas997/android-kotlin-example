@@ -27,9 +27,17 @@ class BoardFirestoreService(service: FirebaseFirestore) : FirestoreService<Board
         return board
     }
 
-    override suspend fun readWhereEquals(field: String, value: String): List<Board> {
+    override suspend fun readWhereEquals(field: String, value: Any): List<Board> {
         val snapshot = collection
             .whereEqualTo(field, value)
+            .get()
+            .await()
+        return snapshot.toObjects(Board::class.java)
+    }
+
+    override suspend fun readWhereArrayContains(field: String, value: Any): List<Board> {
+        val snapshot = collection
+            .whereArrayContains(field, value)
             .get()
             .await()
         return snapshot.toObjects(Board::class.java)

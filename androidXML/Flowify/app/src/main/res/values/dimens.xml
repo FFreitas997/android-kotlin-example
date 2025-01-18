@@ -31,4 +31,15 @@
     <dimen name="recycler_view_board_item_image_size">60dp</dimen>
     <dimen name="recycler_view_board_item_name_size">20sp</dimen>
     <dimen name="recycler_view_board_item_date_size">14sp</dimen>
+    <dimen name="details_board_activity_no_data_size_text">20sp</dimen>
+    <dimen name="recycler_view_task_item_title_size">18sp</dimen>
+    <dimen name="recycler_view_task_item_status_size">14sp</dimen>
+    <dimen name="recycler_view_task_item_date_size">14sp</dimen>
+    <dimen name="tasks_fragment_no_tasks_found_size_text">20sp</dimen>
+    <dimen name="recycler_view_task_item_image_size">60dp</dimen>
+    <dimen name="recycler_view_task_item_name_size">20sp</dimen>
+    <dimen name="recycler_view_task_item_info_size">14sp</dimen>
+    <dimen name="activity_membership_no_data_size_text">20sp</dimen>
+    <dimen name="recycler_view_person_picture_image_size">60dp</dimen>
+    <dimen name="recycler_view_person_info_text_size">16sp</dimen>
 </resources>

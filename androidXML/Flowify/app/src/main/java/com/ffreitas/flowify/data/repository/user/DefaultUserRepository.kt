@@ -19,9 +19,20 @@ class DefaultUserRepository(
             firestore.create(user.id, user)
         }
 
+    override suspend fun getUserByID(id: String) =
+        withContext(dispatcher) {
+            firestore.read(id)
+        }
+
+    override suspend fun getUserByEmail(email: String): User? =
+        withContext(dispatcher) {
+            firestore
+                .readWhereEquals("email", email)
+                .firstOrNull()
+        }
+
     override suspend fun getCurrentUser(): User? =
         withContext(dispatcher) {
-            checkNotNull(authentication) { "Auth service cannot be null" }
             authentication
                 .getCurrentUser()
                 ?.let { current -> firestore.read(current.uid) }

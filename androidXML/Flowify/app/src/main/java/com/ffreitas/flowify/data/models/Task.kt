@@ -3,14 +3,15 @@ package com.ffreitas.flowify.data.models
 import android.os.Parcel
 import android.os.Parcelable
 
-data class Board(
+data class Task(
     val id: String = "",
-    val name: String = "",
-    val picture: String = "",
+    val title: String = "",
+    val description: String = "",
     val createdBy: String = "",
+    val createdByName: String = "",
     val createdAt: String = "",
-    val assignTo: List<String> = emptyList(),
-    val taskList: List<Task> = emptyList()
+    val boardName: String = "",
+    val boardImage: String = ""
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -19,30 +20,32 @@ data class Board(
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
-        parcel.createStringArrayList()!!,
-        parcel.createTypedArrayList(Task)!!
+        parcel.readString()!!,
+        parcel.readString()!!,
+        parcel.readString()!!
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)
-        parcel.writeString(name)
-        parcel.writeString(picture)
+        parcel.writeString(title)
+        parcel.writeString(description)
         parcel.writeString(createdBy)
+        parcel.writeString(createdByName)
         parcel.writeString(createdAt)
-        parcel.writeStringList(assignTo)
-        parcel.writeTypedList(taskList)
+        parcel.writeString(boardName)
+        parcel.writeString(boardImage)
     }
 
     override fun describeContents(): Int {
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<Board> {
-        override fun createFromParcel(parcel: Parcel): Board {
-            return Board(parcel)
+    companion object CREATOR : Parcelable.Creator<Task> {
+        override fun createFromParcel(parcel: Parcel): Task {
+            return Task(parcel)
         }
 
-        override fun newArray(size: Int): Array<Board?> {
+        override fun newArray(size: Int): Array<Task?> {
             return arrayOfNulls(size)
         }
     }
