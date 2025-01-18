@@ -83,4 +83,6 @@
     <string name="activity_membership_assign_board_success">Utilizador com nome %1$s atribuído com sucesso</string>
     <string name="activity_membership_delete_board_success">O membro com nome %1$s foi removido com sucesso</string>
     <string name="activity_membership_delete_board_error">Ocorreu um erro ao remover o membro do quadro</string>
+    <string name="plus_task">Criar Tarefa</string>
+    <string name="assign_user">Atribuir Utilizador</string>
 </resources>

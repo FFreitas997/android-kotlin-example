@@ -51,6 +51,7 @@ class DefaultBoardRepository(private val service: FirestoreService<Board>) : Boa
 
     override suspend fun assignUserToBoard(boardID: String, userID: String) {
         val board = getBoard(boardID)
+        require(!board.assignTo.contains(userID)) { "User already assigned to board" }
         val updatedBoard = board
             .copy(assignTo = board.assignTo + userID)
         updateBoard(updatedBoard)
@@ -63,8 +64,9 @@ class DefaultBoardRepository(private val service: FirestoreService<Board>) : Boa
     }
 
     override suspend fun deleteMember(currentBoardID: String, userID: String) {
-        getBoard(currentBoardID)
-            .run { this.copy(assignTo = this.assignTo.filter { it != userID }) }
-            .apply { updateBoard(this) }
+        val board = getBoard(currentBoardID)
+        require(board.createdBy != userID) { "Cannot delete the creator of the board" }
+        val updatedBoard = board.copy(assignTo = board.assignTo.filter { it != userID })
+        updateBoard(updatedBoard)
     }
 }

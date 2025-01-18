@@ -7,4 +7,10 @@
         android:icon="@drawable/card_membership_24px"
         android:title="@string/membership"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/plus_task"
+        android:orderInCategory="200"
+        android:icon="@drawable/add_24px"
+        android:title="@string/plus_task"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -83,4 +83,6 @@
     <string name="activity_membership_assign_board_success">User with name %1$s assigned successfully</string>
     <string name="activity_membership_delete_board_success">Member with name %1$s was removed successfully</string>
     <string name="activity_membership_delete_board_error">An error occurred while deleting the member from the board</string>
+    <string name="plus_task">Create Task</string>
+    <string name="assign_user">Assign User</string>
 </resources>

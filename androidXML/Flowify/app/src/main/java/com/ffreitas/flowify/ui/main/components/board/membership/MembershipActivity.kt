@@ -1,8 +1,12 @@
 package com.ffreitas.flowify.ui.main.components.board.membership
 
+import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
@@ -18,6 +22,7 @@ import com.ffreitas.flowify.utils.Constants.EXTRA_BOARD_MEMBER
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.ffreitas.flowify.utils.SwipeToDeleteCallback
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -60,10 +65,6 @@ class MembershipActivity : AppCompatActivity() {
             .toolbar
             .setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
-        layout
-            .assignTaskButton
-            .setOnClickListener { handleAssignUser() }
-
         model.membersState.observe(this) { handleMembersState(it) }
         model.assignUserState.observe(this) { handleAssignUserState(it) }
         model.memberDeleteState.observe(this) { handleMemberDeleteState(it) }
@@ -103,7 +104,6 @@ class MembershipActivity : AppCompatActivity() {
             is MembershipState.Loading -> progressDialog.show()
             is MembershipState.Success -> {
                 progressDialog.dismiss()
-                layout.inputAssign.text?.clear()
                 handleSuccessMessage(
                     getString(
                         R.string.activity_membership_assign_board_success,
@@ -179,14 +179,46 @@ class MembershipActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun handleAssignUser() {
-        val email = layout.inputAssign.text
+    private fun handleAssignUser(emailInput: TextInputEditText) {
+        val email = emailInput.text
         if (email.isNullOrEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            layout.inputAssignLayout.error =
-                getString(R.string.activity_membership_assign_task_invalid)
+            handleErrorMessage(R.string.activity_membership_assign_board_error)
             return
         }
         model.assignUserToBoard(email.toString())
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.membership_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.assign_user -> {
+                displayAssignUserDialog()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun displayAssignUserDialog() {
+        Log.d(TAG, "Assign user clicked")
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.assign_user_custom_dialog)
+        dialog.setCancelable(true)
+        val width = (resources.displayMetrics.widthPixels)
+        val height = (resources.displayMetrics.heightPixels * 0.40).toInt()
+        dialog.window?.setLayout(width, height)
+        val assignUserButton = dialog.findViewById<Button>(R.id.assign_task_button)
+        assignUserButton.setOnClickListener {
+            val emailInput = dialog.findViewById<TextInputEditText>(R.id.input_assign)
+            handleAssignUser(emailInput)
+            dialog.dismiss()
+        }
+        dialog.show()
     }
 
     override fun onDestroy() {

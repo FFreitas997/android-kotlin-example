@@ -9,7 +9,7 @@ import com.ffreitas.flowify.R
 import com.ffreitas.flowify.data.models.User
 import com.ffreitas.flowify.databinding.MembershipItemBinding
 
-class MembersAdapter(private val context: Context, private val members: MutableList<User>) :
+class MembersAdapter(private val context: Context, val members: MutableList<User>) :
     RecyclerView.Adapter<MembersAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

@@ -1,11 +1,13 @@
 package com.ffreitas.flowify.ui.main.components.board.details
 
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
@@ -24,6 +26,7 @@ import com.ffreitas.flowify.utils.Constants.EXTRA_BOARD_MEMBER
 import com.ffreitas.flowify.utils.ProgressDialog
 import com.ffreitas.flowify.utils.SwipeToDeleteCallback
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -75,17 +78,33 @@ class DetailsBoardActivity : AppCompatActivity() {
         intent
             .getStringExtra(EXTRA_BOARD)
             ?.let { model.currentBoard(it) }
-
-        layout
-            .createTaskButton
-            .setOnClickListener { handleCreateTask() }
     }
 
+    private fun displayCreateTaskDialog() {
+        Log.d(TAG, "Displaying create task dialog")
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.create_task_custom_dialog)
+        dialog.setCancelable(true)
+        val width = (resources.displayMetrics.widthPixels)
+        val height = (resources.displayMetrics.heightPixels * 0.60).toInt()
+        dialog.window?.setLayout(width, height)
+        val createButton = dialog.findViewById<Button>(R.id.create_task_button)
+        createButton.setOnClickListener {
+            val titleInput = dialog.findViewById<TextInputEditText>(R.id.input_title)
+            val descriptionInput = dialog.findViewById<TextInputEditText>(R.id.input_description)
+            handleCreateTask(titleInput, descriptionInput)
+            dialog.dismiss()
+        }
+        dialog.show()
+    }
 
-    private fun handleCreateTask() {
+    private fun handleCreateTask(
+        titleInput: TextInputEditText,
+        descriptionInput: TextInputEditText
+    ) {
         Log.d(TAG, "Creating task")
-        val title = layout.inputTitle.text
-        val description = layout.inputDescription.text
+        val title = titleInput.text
+        val description = descriptionInput.text
         if (title.isNullOrEmpty() || description.isNullOrEmpty()) {
             handleErrorMessage(R.string.details_board_activity_invalid_task)
             return
@@ -150,7 +169,7 @@ class DetailsBoardActivity : AppCompatActivity() {
         layout.rvTasks.adapter = adapter
         layout.rvTasks.setHasFixedSize(true)
         layout.rvTasks.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
 
         val deleteSwipeHandler = object : SwipeToDeleteCallback(this) {
@@ -197,6 +216,10 @@ class DetailsBoardActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.membership -> {
                 handleMembership(); true
+            }
+
+            R.id.plus_task -> {
+                displayCreateTaskDialog(); true
             }
 
             else -> super.onOptionsItemSelected(item)
