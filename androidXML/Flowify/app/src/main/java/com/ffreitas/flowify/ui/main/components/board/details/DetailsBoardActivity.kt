@@ -120,12 +120,6 @@ class DetailsBoardActivity : AppCompatActivity() {
 
             is DetailsBoardUIState.Success -> {
                 progressDialog.dismiss()
-                handleSuccessMessage(
-                    getString(
-                        R.string.details_board_activity_create_task_success,
-                        state.data.title
-                    )
-                )
                 model.currentBoard?.let { model.currentBoard(it.id) }
             }
 
@@ -182,14 +176,6 @@ class DetailsBoardActivity : AppCompatActivity() {
 
         val deleteItemTouchHelper = ItemTouchHelper(deleteSwipeHandler)
         deleteItemTouchHelper.attachToRecyclerView(layout.rvTasks)
-    }
-
-    private fun handleSuccessMessage(message: String) {
-        Snackbar
-            .make(layout.root, message, Snackbar.LENGTH_SHORT)
-            .setBackgroundTint(resources.getColor(R.color.md_theme_primary, null))
-            .setTextColor(resources.getColor(R.color.md_theme_inversePrimary, null))
-            .show()
     }
 
     private fun handleErrorMessage(@StringRes message: Int) {

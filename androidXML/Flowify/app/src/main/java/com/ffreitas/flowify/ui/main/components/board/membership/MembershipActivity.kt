@@ -84,12 +84,6 @@ class MembershipActivity : AppCompatActivity() {
             is MembershipState.Loading -> progressDialog.show()
             is MembershipState.Success -> {
                 progressDialog.dismiss()
-                handleSuccessMessage(
-                    getString(
-                        R.string.activity_membership_delete_board_success,
-                        state.data.name
-                    )
-                )
             }
 
             is MembershipState.Error -> {
@@ -104,12 +98,6 @@ class MembershipActivity : AppCompatActivity() {
             is MembershipState.Loading -> progressDialog.show()
             is MembershipState.Success -> {
                 progressDialog.dismiss()
-                handleSuccessMessage(
-                    getString(
-                        R.string.activity_membership_assign_board_success,
-                        state.data.name
-                    )
-                )
                 model.requestMembers()
             }
 
@@ -161,14 +149,6 @@ class MembershipActivity : AppCompatActivity() {
 
         val deleteItemTouchHelper = ItemTouchHelper(deleteSwipeHandler)
         deleteItemTouchHelper.attachToRecyclerView(layout.rvMembers)
-    }
-
-    private fun handleSuccessMessage(message: String) {
-        Snackbar
-            .make(layout.root, message, Snackbar.LENGTH_SHORT)
-            .setBackgroundTint(resources.getColor(R.color.md_theme_primary, null))
-            .setTextColor(resources.getColor(R.color.md_theme_inversePrimary, null))
-            .show()
     }
 
     private fun handleErrorMessage(@StringRes message: Int) {
